@@ -362,7 +362,7 @@ fn overrides_of_unregistered_app_actions_wait_until_registered() {
     let (overrides, _) = Overrides::parse("mail.compose = Primary+Shift+M\n");
     let (mut keymap, _) = Keymap::conventional(Platform::Windows).with_overrides(&overrides);
     let compose = app_action("mail.compose");
-    assert_eq!(keymap.dormant_overrides(), [compose.clone()]);
+    assert_eq!(keymap.dormant_overrides(), std::slice::from_ref(&compose));
     assert_eq!(
         keymap.resolve(&input("Ctrl+Shift+M"), Context::Normal),
         None

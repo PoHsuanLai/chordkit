@@ -283,7 +283,7 @@ fn word_of(modifier: Modifier, os_key: &'static str) -> &'static str {
 fn key_text(key: Key, style: &Style) -> String {
     let glyphs = matches!(style, Style::Glyphs);
     let os_key: &'static str = match style {
-        Style::Words { os_key, .. } => *os_key,
+        Style::Words { os_key, .. } => os_key,
         Style::Glyphs => "",
     };
     match key {
@@ -332,7 +332,7 @@ fn render(prefix: &[&str], modifiers: Modifiers, key: Key, style: &Style) -> Str
             let mods = order
                 .iter()
                 .filter(|modifier| modifiers.contains(**modifier))
-                .map(|modifier| word_of(*modifier, *os_key));
+                .map(|modifier| word_of(*modifier, os_key));
             let parts: Vec<String> = prefix
                 .iter()
                 .copied()

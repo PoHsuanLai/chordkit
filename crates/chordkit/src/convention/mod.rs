@@ -110,7 +110,7 @@ impl ConventionTable {
     fn space_row(&self, n: SpaceNumber) -> Row {
         match self.spaces {
             Spaces::Keys(keys) => Row::Key(keys[usize::from(n.get()) - 1]),
-            Spaces::None(reason) => Row::Unbound(*reason),
+            Spaces::None(reason) => Row::Unbound(reason),
         }
     }
 }
