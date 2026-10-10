@@ -37,11 +37,15 @@ impl Binding {
         }
     }
 
-    /// The chord that is live on `platform` in `context`: the default's, else the fallback's.
+    /// The chord that is live on `platform` in `context`: the default's, else the fallback's. A
+    /// form that cannot fire in `context` (a plain-Ctrl chord in a terminal, which the program
+    /// keeps) counts as no form, so the fallback is tried.
     pub(crate) fn live(self, platform: Platform, context: Context) -> Option<Chord> {
+        let fires = |chord: &Chord| super::effective::allowed(context, *chord);
         self.first
             .resolve(platform, context)
-            .or_else(|| self.fallback?.resolve(platform, context))
+            .filter(fires)
+            .or_else(|| self.fallback?.resolve(platform, context).filter(fires))
     }
 }
 
