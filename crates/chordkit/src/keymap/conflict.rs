@@ -39,6 +39,16 @@ pub enum Conflict {
         /// The action that asked for it.
         wanted_by: String,
     },
+    /// An app tried to forgo a standard action every app honours.
+    #[error("\"{meaning}\" works in every app, so {app} can't give it up")]
+    Universal {
+        /// The standard action.
+        action: StandardAction,
+        /// That action in plain words.
+        meaning: String,
+        /// The app that tried.
+        app: String,
+    },
     /// An action id that does not start with the registering app's name.
     #[error("{action} doesn't belong to {app}: an app's action ids start with its name")]
     ForeignAction {

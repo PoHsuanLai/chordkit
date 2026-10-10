@@ -7,6 +7,7 @@ mod conflict;
 mod effective;
 mod layers;
 mod register;
+mod registration;
 mod resolved;
 
 use crate::action::{Action, AppAction};
@@ -20,7 +21,8 @@ use crate::source::SystemBinding;
 use crate::standard_action::StandardAction;
 
 pub use conflict::Conflict;
-use layers::{Entry, Layer, upsert};
+use layers::{Binding, Entry, Layer, upsert};
+pub use registration::Registration;
 use resolved::Resolved;
 
 /// The bindings of one platform.
@@ -40,7 +42,7 @@ impl Keymap {
                 Convention::Bound(chord) => Some(Entry {
                     action: Action::Standard(action),
                     layer: Layer::Convention,
-                    chords: vec![chord],
+                    chords: vec![chord.into()],
                 }),
                 Convention::Unbound(_) => None,
             })
@@ -62,7 +64,11 @@ impl Keymap {
                 Entry {
                     action: Action::Standard(binding.action),
                     layer: Layer::System,
-                    chords: binding.chords.into_iter().map(DefaultChord::from).collect(),
+                    chords: binding
+                        .chords
+                        .into_iter()
+                        .map(|chord| Binding::from(DefaultChord::from(chord)))
+                        .collect(),
                 },
             );
         }
@@ -70,8 +76,9 @@ impl Keymap {
     }
 
     /// This keymap with the person's changes laid on top. Chords the platform reserves are
-    /// refused and reported; the rest take effect. Changes to app actions nobody has registered
-    /// wait (see `dormant_overrides`).
+    /// refused and reported; the rest take effect. A change to an app action whose registration
+    /// was refused binds too: the person's choice wins, over standard actions as well. Changes to
+    /// app actions nobody has registered wait (see `dormant_overrides`).
     pub fn with_overrides(mut self, overrides: &Overrides) -> (Keymap, Vec<OverrideProblem>) {
         let mut problems = Vec::new();
         for change in overrides.entries() {
@@ -93,7 +100,7 @@ impl Keymap {
                 Entry {
                     action: change.action.clone(),
                     layer: Layer::Person,
-                    chords: allowed,
+                    chords: allowed.into_iter().map(Binding::from).collect(),
                 },
             );
         }
@@ -151,7 +158,8 @@ impl Keymap {
         self.resolved.in_context(context).pairs()
     }
 
-    /// App actions the person has changed that no app has registered (yet).
+    /// App actions the person has changed that no app has registered (yet). An action an app
+    /// registered but had refused is not dormant: the person's change binds.
     pub fn dormant_overrides(&self) -> Vec<AppAction> {
         let registered = |action: &Action| {
             self.entries
@@ -215,6 +223,8 @@ impl Keymap {
     }
 }
 
+#[cfg(test)]
+mod forgo_tests;
 #[cfg(test)]
 mod terminal_tests;
 #[cfg(test)]

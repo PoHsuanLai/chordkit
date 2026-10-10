@@ -158,7 +158,48 @@ fn on_action(action: Action) {
 Rules for apps: write defaults with `Primary` (never "Cmd" or "Ctrl"); never register a standard
 action's chord (Save is `Standard(Save)`, handle it); never define a chord type. A person's own
 change to your action is stored under its id (`mail.compose = Primary+Alt+N` in their overrides) and
-wins over your default. Register at startup, and again after a reload.
+wins over your default (see below). Register at startup, and again after a reload.
+
+### Standard actions an app does not offer
+
+Every standard action has a `Reach` (`StandardAction::reach`). `Reach::Universal` actions are
+honoured by every app and keep their chord: copy, cut, paste, select all, undo, redo, find (and next,
+previous), settings, help, cancel, quit, close, minimise, hide, full screen, the app and window
+switchers and every desktop action (Spaces, screenshots, lock, log out). `Reach::IfOffered` actions
+mean something only where the app has the feature: paste and match style, use selection for find,
+jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, new, open, save,
+save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal.
+
+An app without the feature gives the action up and may then use its chord. Build the registration with
+`Registration`; the forgone action stops holding its chord in that app's keymap (every other app, with
+its own keymap, still sees it). Forgoing a universal action is refused (`Conflict::Universal`), and a
+reserved platform chord is refused as before.
+
+```rust
+use chordkit::{Registration, StandardAction};
+
+let registration = Registration::new(&temor)
+    .forgo(StandardAction::ShowFonts)                 // temor has no font panel
+    .action(new_tab, "Primary+T".parse()?)            // so Primary+T is free
+    .action_with_fallback(
+        equalize,
+        "Primary+Shift+Alt+E".parse()?,               // no terminal form on a Ctrl+Shift platform
+        "Primary+Alt+Q".parse()?,                     // used in the contexts where the first has none
+    );
+keymap.register_with(&registration)?;
+```
+
+A fallback serves each context where the first default resolves to nothing; a chord the keymap refuses
+is checked on whichever chord is live in each context. `register(app, rows)` is the same without
+forgoing or fallbacks.
+
+### Overrides and refused actions
+
+A person's chord for your action wins over your default. It also revives an action whose registration
+was refused (for a default the platform reserves or a standard action holds): the action had no chord,
+and the person's chord binds, even on a chord a standard action holds (that action loses it). Only a
+chord the platform reserves is refused, with a reason in `with_overrides`' problems.
+`dormant_overrides()` lists only changes to actions nobody registered.
 
 ## A source in another repo (keycap)
 

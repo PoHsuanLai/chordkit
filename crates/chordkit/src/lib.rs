@@ -20,6 +20,7 @@ mod keymap;
 mod modifier;
 mod overrides;
 mod platform;
+mod reach;
 mod reserved;
 #[cfg(feature = "serde")]
 mod serde_support;
@@ -33,10 +34,11 @@ pub use convention::{Convention, ConventionTable};
 pub use detect::{HostOs, OVERRIDE_VAR, detect, detect_process};
 pub use key::{Key, NamedKey};
 pub use key_input::{AltGr, KeyInput};
-pub use keymap::{Conflict, Keymap};
+pub use keymap::{Conflict, Keymap, Registration};
 pub use modifier::{Modifier, Modifiers};
 pub use overrides::{OverrideEntry, OverrideProblem, Overrides};
 pub use platform::{Context, Desktop, Platform, PlatformError};
+pub use reach::Reach;
 pub use reserved::reserved_reason;
 pub use source::{
     ChangeCallback, ConventionSource, KeymapSource, SourceError, SystemBinding, SystemImport, Watch,

@@ -3,11 +3,14 @@
 use super::Keymap;
 use super::conflict::Conflict;
 use super::effective::effective;
-use super::layers::{Entry, Layer, upsert};
+use super::layers::{Binding, Entry, Layer, upsert};
+use super::registration::{Registration, Row};
 use crate::action::{Action, AppAction, AppId};
 use crate::chord::{Chord, DefaultChord};
 use crate::platform::Context;
+use crate::reach::Reach;
 use crate::reserved::reserved_reason;
+use crate::standard_action::StandardAction;
 
 /// Contexts whose Primary differs; a chord must be free in each.
 const CHECKED: [Context; 2] = [Context::Normal, Context::Terminal];
@@ -15,22 +18,47 @@ const CHECKED: [Context; 2] = [Context::Normal, Context::Terminal];
 impl Keymap {
     /// Registers `app`'s actions with their portable default chords. All or nothing: the first
     /// chord the platform reserves, a standard action owns, or another action holds is refused.
-    /// A person's own changes never refuse a registration; they simply win later.
+    /// A person's own changes never refuse a registration; they simply win later. This is
+    /// `register_with` for an app that forgoes nothing and has no fallbacks.
     pub fn register(
         &mut self,
         app: &AppId,
         actions: &[(AppAction, DefaultChord)],
     ) -> Result<(), Conflict> {
-        let mut staged: Vec<Entry> = Vec::new();
-        for (action, chord) in actions {
-            if action.app() != *app {
-                return Err(Conflict::ForeignAction {
-                    action: action.id().to_owned(),
-                    app: app.as_str().to_owned(),
-                });
+        let registration = actions
+            .iter()
+            .fold(Registration::new(app), |registration, (action, chord)| {
+                registration.action(action.clone(), *chord)
+            });
+        self.register_with(&registration)
+    }
+
+    /// Registers what `registration` declares, all or nothing, as `register` does. Standard
+    /// actions it forgoes stop holding their chords in this keymap (a universal one is refused).
+    /// A refused app action is remembered, so a person's own chord for it still binds.
+    pub fn register_with(&mut self, registration: &Registration) -> Result<(), Conflict> {
+        let app = registration.app();
+        if let Some(foreign) = registration.rows().iter().find(|r| r.action.app() != *app) {
+            return Err(Conflict::ForeignAction {
+                action: foreign.action.id().to_owned(),
+                app: app.as_str().to_owned(),
+            });
+        }
+        let mut staged = forgone_entries(app, registration.forgone())?;
+        let mut refused: Vec<AppAction> = Vec::new();
+        let mut first: Option<Conflict> = None;
+        for row in registration.rows() {
+            match self.check(row, &staged) {
+                Ok(()) => stage(&mut staged, row),
+                Err(conflict) => {
+                    refused.push(row.action.clone());
+                    first.get_or_insert(conflict);
+                }
             }
-            self.check(action, *chord, &staged)?;
-            stage(&mut staged, action, *chord);
+        }
+        if let Some(conflict) = first {
+            self.remember_refused(refused);
+            return Err(conflict);
         }
         for entry in staged {
             upsert(&mut self.entries, entry);
@@ -39,13 +67,28 @@ impl Keymap {
         Ok(())
     }
 
-    fn check(
-        &self,
-        action: &AppAction,
-        chord: DefaultChord,
-        staged: &[Entry],
-    ) -> Result<(), Conflict> {
-        let wanting = Action::App(action.clone());
+    /// Marks each refused action as registered with no chords, unless an app already registered
+    /// it, so the person's chord for it is live.
+    fn remember_refused(&mut self, refused: Vec<AppAction>) {
+        for action in refused {
+            let wanted = Action::App(action);
+            let known = self
+                .entries
+                .iter()
+                .any(|e| e.layer == Layer::App && e.action == wanted);
+            if !known {
+                self.entries.push(Entry {
+                    action: wanted,
+                    layer: Layer::App,
+                    chords: Vec::new(),
+                });
+            }
+        }
+        self.rebuild();
+    }
+
+    fn check(&self, row: &Row, staged: &[Entry]) -> Result<(), Conflict> {
+        let wanting = Action::App(row.action.clone());
         let live: Vec<Entry> = self
             .entries
             .iter()
@@ -54,7 +97,7 @@ impl Keymap {
             .cloned()
             .collect();
         for context in CHECKED {
-            let Some(concrete) = chord.resolve(self.platform, context) else {
+            let Some(concrete) = row.binding.live(self.platform, context) else {
                 continue;
             };
             let shown = concrete.display(self.platform);
@@ -76,6 +119,26 @@ impl Keymap {
     }
 }
 
+/// The entries that unbind the standard actions an app does not offer; a universal action is
+/// refused.
+fn forgone_entries(app: &AppId, forgone: &[StandardAction]) -> Result<Vec<Entry>, Conflict> {
+    forgone
+        .iter()
+        .map(|action| match action.reach() {
+            Reach::IfOffered => Ok(Entry {
+                action: Action::Standard(*action),
+                layer: Layer::Forgone,
+                chords: Vec::new(),
+            }),
+            Reach::Universal => Err(Conflict::Universal {
+                action: *action,
+                meaning: action.label(),
+                app: app.as_str().to_owned(),
+            }),
+        })
+        .collect()
+}
+
 fn clash(shown: String, held: Action, wanting: &Action) -> Conflict {
     match held {
         Action::Standard(action) => Conflict::Standard {
@@ -92,14 +155,15 @@ fn clash(shown: String, held: Action, wanting: &Action) -> Conflict {
     }
 }
 
-fn stage(staged: &mut Vec<Entry>, action: &AppAction, chord: DefaultChord) {
-    let wanted = Action::App(action.clone());
+fn stage(staged: &mut Vec<Entry>, row: &Row) {
+    let wanted = Action::App(row.action.clone());
+    let binding: Binding = row.binding;
     match staged.iter_mut().find(|entry| entry.action == wanted) {
-        Some(entry) => entry.chords.push(chord),
+        Some(entry) => entry.chords.push(binding),
         None => staged.push(Entry {
             action: wanted,
             layer: Layer::App,
-            chords: vec![chord],
+            chords: vec![binding],
         }),
     }
 }

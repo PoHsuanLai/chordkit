@@ -16,7 +16,16 @@
 - The overrides format is lines, not TOML: the core stays serde-free; one line per chord; a bad line is
   reported and skipped. TOML or JSON users build `Overrides::from_entries`.
 - Person-layer entries for app actions nobody registered stay dormant (`Keymap::dormant_overrides`) and
-  go live when the app registers.
+  go live when the app registers. An app action whose registration was refused is remembered with no
+  chords, so the person's chord for it binds at once (over standard actions too, never over a reserved
+  chord).
+- Standard actions have a `Reach`: `Universal` (every app, never forgone) or `IfOffered` (an app that
+  lacks the feature may forgo it with `Registration::forgo` and take the chord). The table is
+  `StandardAction::reach` in `reach.rs`; a forgone action is unbound in that app's keymap whatever the
+  system or the person says.
+- A registration row may carry a fallback default, live in each context where the first default has no
+  form. Open: the fallback is not tried when the first default has a form but collides; that row is
+  refused.
 
 ## Sources
 

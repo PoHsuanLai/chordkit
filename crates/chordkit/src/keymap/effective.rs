@@ -11,7 +11,8 @@ use crate::platform::{Context, Platform};
 /// An action and one chord that triggers it.
 pub(crate) type Pair = (Action, Chord);
 
-/// A person's entry for an app action nobody registered: kept, but not live.
+/// A person's entry for an app action nobody registered: kept, but not live. An action whose
+/// registration was refused counts as registered (with no chords of its own).
 fn dormant(entries: &[Entry], entry: &Entry) -> bool {
     entry.layer == Layer::Person
         && matches!(entry.action, Action::App(_))
@@ -50,9 +51,9 @@ fn allowed(context: Context, chord: Chord) -> bool {
 pub(crate) fn effective(platform: Platform, entries: &[Entry], context: Context) -> Vec<Pair> {
     let mut wanted: Vec<(Layer, &Action, Chord)> = Vec::new();
     for entry in winners(entries) {
-        for default in &entry.chords {
-            if let Some(chord) = default
-                .resolve(platform, context)
+        for binding in &entry.chords {
+            if let Some(chord) = binding
+                .live(platform, context)
                 .filter(|c| allowed(context, *c))
             {
                 wanted.push((entry.layer, &entry.action, chord));
