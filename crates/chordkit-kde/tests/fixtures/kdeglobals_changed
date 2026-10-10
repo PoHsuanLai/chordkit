@@ -1,0 +1,14 @@
+[General]
+ColorScheme=BreezeDark
+
+[Shortcuts]
+Copy=Ctrl+Insert;Ctrl+C
+Redo=Ctrl+Y
+Undo=none
+Quit=Ctrl+Alt+Q
+Find=Ctrl+Nope
+Mail=Ctrl+Shift+M
+Unrelated Thing=Meta+X
+
+[KDE]
+ShowIconsOnPushButtons=true

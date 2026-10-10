@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/chordkit"]
+members = ["crates/chordkit", "crates/chordkit-kde"]
 
 [workspace.package]
 version = "0.1.0"
