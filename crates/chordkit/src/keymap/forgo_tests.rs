@@ -92,7 +92,16 @@ fn a_forgone_action_stays_gone_when_the_system_or_person_binds_it() {
     assert_eq!(keymap.register_with(&registration), Ok(()));
     let (overrides, _) = Overrides::parse("show-fonts = Primary+Alt+T\n");
     let (keymap, _) = keymap.with_overrides(&overrides);
-    assert_eq!(keymap.resolve(&input("Super+Alt+T"), Context::Normal), None);
+    // ⌥⌘T is Show Toolbar on a Mac; what matters is that Show Fonts is bound nowhere.
+    assert_ne!(
+        keymap.resolve(&input("Super+Alt+T"), Context::Normal),
+        standard(StandardAction::ShowFonts)
+    );
+    assert!(
+        keymap
+            .chords_of(&Action::Standard(StandardAction::ShowFonts))
+            .is_empty()
+    );
 }
 
 #[test]
@@ -270,7 +279,11 @@ fn the_person_may_take_a_standard_chord_but_not_a_reserved_one() {
     );
     let (kept, problems) = refused_pane_keymap("temor.pane-left = Alt+Tab\n", true);
     assert_eq!(problems.len(), 1);
-    assert_eq!(kept.resolve(&input("Alt+Tab"), Context::Normal), None);
+    // The refused override leaves Alt+Tab with its standard meaning.
+    assert_eq!(
+        kept.resolve(&input("Alt+Tab"), Context::Normal),
+        standard(StandardAction::NextApp)
+    );
     assert!(kept.chords_of(&Action::App(pane_left())).is_empty());
 }
 
