@@ -28,7 +28,7 @@ Layers, lowest first; a module imports from its own layer or a lower one.
 | L0 vocabulary | `modifier`, `key`, `standard_action`, `action` | `Modifier`, `Modifiers`, `Key`, `NamedKey`, `StandardAction`, `SpaceNumber`, `Action`, `AppAction`, `AppId` |
 | L1 chords | `chord`, `chord_text`, `platform`, `detect` | `Chord`, `DefaultChord`, `PrimaryUse`, parse and display, `Platform`, `Desktop`, `Context`, `detect` |
 | L2 data | `convention/`, `reserved` | per-platform default chords, per-platform reserved chords |
-| L3 input | `key_input` | `KeyInput::normalise` |
+| L3 input | `key_input` | `KeyInput`, `AltGr`, `KeyInput::normalise`, `normalise_in` |
 | L4 keymap | `keymap/` (`layers`, `effective`, `resolved`, `register`, `conflict`), `overrides`, `source`, `keyfile` | `Keymap`, `Conflict`, `Overrides`, `KeymapSource`, `SystemBinding` |
 | edge | `serde_support` (feature `serde`) | string forms for stored types |
 
@@ -41,6 +41,7 @@ Layers, lowest first; a module imports from its own layer or a lower one.
 | default chords | `convention/` (one file per platform family) |
 | chords an app may not take | `reserved.rs` |
 | which binding wins | `keymap/effective.rs` |
+| Primary input alias in a terminal (our desktop: Ctrl+Shift), Primary form test | `Platform::primary_alias`, `KeyInput::normalise_in`, `Keymap::is_primary_form` |
 | which keys a text field or terminal keeps | `Chord::belongs_to_text_field`, `Chord::is_plain_ctrl`, applied in `keymap/effective.rs` |
 | chord text and per-platform display | `chord_text.rs` |
 | the person's overrides format | `overrides.rs` |

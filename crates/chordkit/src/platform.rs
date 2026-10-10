@@ -91,6 +91,21 @@ impl Platform {
         }
     }
 
+    /// Another modifier set a toolkit may send for Primary in `context`, which input treats as
+    /// Primary too. On our desktop the compositor remaps Command to Ctrl+Shift for terminal
+    /// windows, so a keymap-aware terminal accepts either form; elsewhere there is none.
+    pub const fn primary_alias(self, context: Context) -> Option<Modifiers> {
+        match (self, context) {
+            (
+                Platform::Linux {
+                    desktop: Desktop::Ours,
+                },
+                Context::Terminal,
+            ) => Some(Modifiers::of(Modifier::Ctrl).with(Modifier::Shift)),
+            _ => None,
+        }
+    }
+
     /// The modifier a toolkit's Meta flag means on this platform. Toolkits disagree on Meta;
     /// the ones that report it at all (Qt) mean the OS key, so every platform folds it there.
     pub const fn meta_as(self) -> Modifier {
@@ -168,6 +183,20 @@ mod tests {
                 *expected,
                 "{platform:?} {context:?}"
             );
+        }
+    }
+
+    #[test]
+    fn only_our_desktop_terminal_has_a_primary_alias() {
+        let ctrl_shift = mods(&[Modifier::Ctrl, Modifier::Shift]);
+        for platform in Platform::ALL {
+            for context in [Context::Normal, Context::TextEntry, Context::Terminal] {
+                let ours_terminal = platform.is_mac_style()
+                    && platform != Platform::MacOs
+                    && context == Context::Terminal;
+                let expected = ours_terminal.then_some(ctrl_shift);
+                assert_eq!(platform.primary_alias(context), expected, "{platform:?}");
+            }
         }
     }
 

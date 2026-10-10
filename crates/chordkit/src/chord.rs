@@ -108,17 +108,24 @@ impl DefaultChord {
         self.base
     }
 
-    /// The concrete chord on `platform` in `context`. `None` when it has no form there: in a
-    /// terminal where Primary is Ctrl+Shift, a chord that already uses Shift cannot add it.
+    /// The concrete chord on `platform` in `context`. In a terminal where Primary is Ctrl+Shift,
+    /// a chord that already uses Shift cannot add it, so it takes Alt as well (Primary+Shift+Z
+    /// is Ctrl+Shift+Alt+Z); `None` when it uses Alt too, which leaves no stand-in.
     pub fn resolve(self, platform: Platform, context: Context) -> Option<Chord> {
         match self.primary {
             PrimaryUse::Unused => Some(self.base),
             PrimaryUse::Held => {
                 let primary = platform.primary(context);
-                let clash = context == Context::Terminal
+                let base = self.base.modifiers();
+                let shift_clash = context == Context::Terminal
                     && primary.contains(Modifier::Shift)
-                    && self.base.modifiers().contains(Modifier::Shift);
-                (!clash).then(|| Chord::new(self.base.modifiers().union(primary), self.base.key()))
+                    && base.contains(Modifier::Shift);
+                let modifiers = match (shift_clash, base.contains(Modifier::Alt)) {
+                    (false, _) => base.union(primary),
+                    (true, false) => base.union(primary).with(Modifier::Alt),
+                    (true, true) => return None,
+                };
+                Some(Chord::new(modifiers, self.base.key()))
             }
         }
     }
@@ -151,7 +158,7 @@ mod tests {
     }
 
     #[test]
-    fn primary_resolves_per_platform_and_terminal_drops_shift_clashes() {
+    fn primary_resolves_per_platform_and_terminal_stands_in_for_shift_clashes() {
         let undo = DefaultChord::new(
             PrimaryUse::Held,
             Chord::new(Modifiers::NONE, Key::Char('z')),
@@ -175,7 +182,18 @@ mod tests {
                 Key::Char('z')
             ))
         );
-        assert_eq!(redo.resolve(windows, Context::Terminal), None);
+        assert_eq!(
+            redo.resolve(windows, Context::Terminal),
+            Some(Chord::new(
+                mods(&[Modifier::Ctrl, Modifier::Shift, Modifier::Alt]),
+                Key::Char('z')
+            ))
+        );
+        let paste_plain = DefaultChord::new(
+            PrimaryUse::Held,
+            Chord::new(mods(&[Modifier::Shift, Modifier::Alt]), Key::Char('v')),
+        );
+        assert_eq!(paste_plain.resolve(windows, Context::Terminal), None);
         assert_eq!(
             redo.resolve(ours, Context::Terminal),
             Some(Chord::new(

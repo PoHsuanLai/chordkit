@@ -45,7 +45,7 @@ let _watch = source.watch(Box::new(move || tell_main_loop_to_reload()))?; // kee
 not applied (winit's `key_without_modifiers`, GTK's keyval of the unshifted level, Qt's key).
 
 ```rust
-use chordkit::{Key, KeyInput, Modifier, Modifiers, NamedKey};
+use chordkit::{AltGr, Key, KeyInput, Modifier, Modifiers, NamedKey};
 
 fn to_input(event: &ToolkitKeyEvent) -> Option<KeyInput> {
     let mut mods = Modifiers::NONE;
@@ -53,6 +53,7 @@ fn to_input(event: &ToolkitKeyEvent) -> Option<KeyInput> {
     if event.alt()   { mods = mods.with(Modifier::Alt); }
     if event.shift() { mods = mods.with(Modifier::Shift); }
     if event.logo()  { mods = mods.with(Modifier::Super); }   // or Modifier::Meta for Qt's Meta
+    let alt_gr = if event.alt_graph() { AltGr::Held } else { AltGr::Released }; // keyboard-types' ALT_GRAPH
     let key = match event.key_without_modifiers() {
         ToolkitKey::Character(c) => Key::character(c),
         ToolkitKey::Space => Key::Named(NamedKey::Space),
@@ -61,9 +62,15 @@ fn to_input(event: &ToolkitKeyEvent) -> Option<KeyInput> {
         // ... the rest of NamedKey
         _ => return None,
     };
-    Some(KeyInput::new(mods, key))
+    Some(KeyInput::new(mods, key).with_alt_gr(alt_gr))
 }
 ```
+
+Pass the AltGr flag whenever the toolkit has one (keyboard-types' `ALT_GRAPH`, GTK's level-3 shift).
+A press with AltGr held types a character: `resolve` returns `None` and `is_primary_form` is false,
+so it never matches a Ctrl or Alt chord. Windows reports AltGr as Ctrl+Alt plus the flag; leave Ctrl
+and Alt as the toolkit has them, chordkit drops them. Without the flag, Ctrl+Alt+T is an ordinary
+Ctrl+Alt chord. Chords themselves never contain AltGr.
 
 Pass modifiers as the hardware has them. If a toolkit swaps Ctrl and Command (Qt on macOS does), undo
 the swap in `to_input`; chordkit assumes physical keys.
@@ -96,6 +103,32 @@ let shown: Vec<String> = keymap
 ```
 
 `keymap.bindings(context)` lists every live (action, chord) for a settings screen.
+
+### 6. Terminals
+
+A terminal (temor) passes `Context::Terminal` and drops its own keymap. The rules:
+
+- Primary in a terminal is Super on macOS and on our desktop, and Ctrl+Shift elsewhere, so plain Ctrl
+  stays the program's.
+- On our desktop the compositor (keycap) remaps Command to Ctrl+Shift for terminal windows, so
+  `resolve` accepts both Super+D and Ctrl+Shift+D in `Context::Terminal` and finds the same action;
+  menus show the Super form (`⌘D`). Other platforms have no alias.
+- A Primary chord that already uses Shift (Redo, Save As) is Ctrl+Shift+Alt+key in a terminal on the
+  Ctrl+Shift platforms (Windows, KDE, GNOME, other Linux), e.g. Primary+Shift+Z is Ctrl+Shift+Alt+Z. A
+  default that also uses Alt has no terminal form.
+- When `resolve` finds nothing, ask `keymap.is_primary_form(&input, Context::Terminal)`. If it is true
+  the chord is in the Primary form (Super+key, plus Ctrl+Shift+key on our desktop; Ctrl+Shift+key on
+  the other Ctrl+Shift platforms; extra modifiers allowed) with a letter, digit, punctuation or
+  symbol key, whether or not anything is bound. Drop it, as Ghostty does, instead of sending a
+  control byte to the program. Plain Ctrl+D is false and goes to the program.
+
+```rust
+match keymap.resolve(&input, Context::Terminal) {
+    Some(action) => app.on_action(action),
+    None if keymap.is_primary_form(&input, Context::Terminal) => {} // swallowed
+    None => pty.send(encode(&event)),
+}
+```
 
 ## The app
 

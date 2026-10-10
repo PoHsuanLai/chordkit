@@ -32,7 +32,7 @@ pub use chord_text::ChordError;
 pub use convention::{Convention, ConventionTable};
 pub use detect::{HostOs, OVERRIDE_VAR, detect, detect_process};
 pub use key::{Key, NamedKey};
-pub use key_input::KeyInput;
+pub use key_input::{AltGr, KeyInput};
 pub use keymap::{Conflict, Keymap};
 pub use modifier::{Modifier, Modifiers};
 pub use overrides::{OverrideEntry, OverrideProblem, Overrides};

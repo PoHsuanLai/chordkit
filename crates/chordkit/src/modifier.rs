@@ -70,6 +70,16 @@ impl Modifiers {
         self.0 & modifier.bit() != 0
     }
 
+    /// Whether every modifier of `other` is in the set.
+    pub const fn contains_all(self, other: Modifiers) -> bool {
+        self.0 & other.0 == other.0
+    }
+
+    /// This set minus everything in `other`.
+    pub const fn minus(self, other: Modifiers) -> Modifiers {
+        Modifiers(self.0 & !other.0)
+    }
+
     /// Whether nothing is held.
     pub const fn is_empty(self) -> bool {
         self.0 == 0
@@ -105,5 +115,8 @@ mod tests {
             vec![Modifier::Ctrl, Modifier::Shift]
         );
         assert!(Modifiers::NONE.is_empty());
+        assert!(set.contains_all(Modifiers::of(Modifier::Shift)));
+        assert!(!Modifiers::of(Modifier::Ctrl).contains_all(set));
+        assert_eq!(set.minus(set), Modifiers::NONE);
     }
 }

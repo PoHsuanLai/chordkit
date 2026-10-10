@@ -106,10 +106,28 @@ impl Keymap {
     }
 
     /// The action `input` triggers in `context`, if any. The input is normalised for this
-    /// platform first.
+    /// platform and context first (so on our desktop a terminal's Ctrl+Shift+D is Super+D), and
+    /// a press with AltGr held types text and triggers nothing.
     pub fn resolve(&self, input: &KeyInput, context: Context) -> Option<Action> {
-        let chord = input.normalise(self.platform);
+        if input.types_text() {
+            return None;
+        }
+        let chord = input.normalise_in(self.platform, context);
         self.resolved.in_context(context).action_for(chord).cloned()
+    }
+
+    /// Whether `input` is in the Primary form for this platform in `context`, bound or not: it
+    /// holds the Primary modifiers (Ctrl+Shift for a terminal off the Mac style; Super or, on
+    /// our desktop in a terminal, Ctrl+Shift too) and its key is a letter, digit, punctuation
+    /// or symbol. A terminal drops such a chord when `resolve` finds nothing, rather than send
+    /// a control byte to the program. A press with AltGr held is text, so never in this form.
+    pub fn is_primary_form(&self, input: &KeyInput, context: Context) -> bool {
+        let chord = input.normalise_in(self.platform, context);
+        !input.types_text()
+            && chord.key().is_printable()
+            && chord
+                .modifiers()
+                .contains_all(self.platform.primary(context))
     }
 
     /// The chords that trigger `action` in ordinary window content, best first.
@@ -197,5 +215,7 @@ impl Keymap {
     }
 }
 
+#[cfg(test)]
+mod terminal_tests;
 #[cfg(test)]
 mod tests;
