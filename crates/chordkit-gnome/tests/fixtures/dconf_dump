@@ -1,0 +1,17 @@
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+
+[org/gnome/desktop/wm/keybindings]
+minimize=['<Super>h', '<Alt>F9']
+switch-applications=['<Alt>Tab']
+switch-group=@as []
+switch-to-workspace-3=['<Super>3']
+switch-to-workspace-left=['<Banana>x']
+close=['<Alt>F4']
+
+[org/gnome/settings-daemon/plugins/media-keys]
+screensaver=['<Super>l']
+logout='disabled'
+
+[org/gnome/mutter]
+overlay-key='Super_L'
