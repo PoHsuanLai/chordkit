@@ -68,11 +68,18 @@ impl Chord {
             && !self.modifiers.contains(Modifier::Super)
     }
 
-    /// Whether this is Ctrl alone with `=`, `-` or `0`: the window's text size even in a
+    /// Whether this is Ctrl alone with `+`, `=`, `-` or `0`: the window's text size even in a
     /// terminal, as GNOME Terminal, Konsole and Windows Terminal take them.
     pub fn is_text_size(self) -> bool {
         self.modifiers == Modifiers::of(Modifier::Ctrl)
-            && matches!(self.key, Key::Char('=' | '-' | '0'))
+            && matches!(self.key, Key::Char('+' | '=' | '-' | '0'))
+    }
+
+    /// This chord with `+` for `=`, when it has `=` and no Shift: a chord written with `+` (⌘+,
+    /// Ctrl++) is also pressed on the `=` key without Shift, as menus label it and apps take it.
+    pub(crate) fn plus_for_equals(self) -> Option<Chord> {
+        (self.key == Key::Char('=') && !self.modifiers.contains(Modifier::Shift))
+            .then(|| Chord::new(self.modifiers, Key::Char('+')))
     }
 }
 

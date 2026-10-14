@@ -155,6 +155,20 @@ fn resolution_follows_platform_and_context() {
             Some(S::Bigger),
         ),
         (
+            "mac plus via shift equals",
+            Platform::MacOs,
+            Context::Normal,
+            "Super+Shift+=",
+            Some(S::Bigger),
+        ),
+        (
+            "ctrl plus via shift equals in a terminal",
+            Platform::Windows,
+            Context::Terminal,
+            "Ctrl+Shift+=",
+            Some(S::Bigger),
+        ),
+        (
             "the text size keys are the window's in a terminal",
             Platform::Windows,
             Context::Terminal,

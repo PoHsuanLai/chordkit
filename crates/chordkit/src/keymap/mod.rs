@@ -120,7 +120,11 @@ impl Keymap {
             return None;
         }
         let chord = input.normalise_in(self.platform, context);
-        self.resolved.in_context(context).action_for(chord).cloned()
+        let resolved = self.resolved.in_context(context);
+        resolved
+            .action_for(chord)
+            .or_else(|| resolved.action_for(chord.plus_for_equals()?))
+            .cloned()
     }
 
     /// Whether `input` is in the Primary form for this platform in `context`, bound or not: it

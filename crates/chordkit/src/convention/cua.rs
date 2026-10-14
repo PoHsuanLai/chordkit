@@ -52,8 +52,9 @@ pub(super) static ROWS: &[TableRow] = &[
         Unbound("Colours are chosen in the app's own controls here."),
     ),
     // Plain Ctrl, not the Primary: a terminal takes these too, where the Primary is Ctrl+Shift
-    // and Ctrl+Shift+- would be the program's Ctrl+_.
-    (S::Bigger, Key("Ctrl+=")),
+    // and Ctrl+Shift+- would be the program's Ctrl+_. Bigger is labelled Ctrl++ and pressed as
+    // Ctrl+= or Ctrl+Shift+=.
+    (S::Bigger, Key("Ctrl++")),
     (S::Smaller, Key("Ctrl+-")),
     (S::ActualSize, Key("Ctrl+0")),
     (S::Hide, Unbound("Apps are minimised here, not hidden.")),
