@@ -15,7 +15,7 @@ pub struct Chord {
 impl Chord {
     /// A chord, made canonical: Meta folds into Super; a tapped modifier carries no other
     /// modifier; and the symbols Shift makes on a US layout (`Shift+=` is `+`, `Shift+/` is
-    /// `?`) are written as the symbol with no Shift, as menus write them.
+    /// `?`, `Shift+-` is `_`) are written as the symbol with no Shift, as menus write them.
     pub fn new(modifiers: Modifiers, key: Key) -> Chord {
         let modifiers = if modifiers.contains(Modifier::Meta) {
             modifiers.without(Modifier::Meta).with(Modifier::Super)
@@ -36,7 +36,11 @@ impl Chord {
                 modifiers: modifiers.without(Modifier::Shift),
                 key: Key::Char('?'),
             },
-            (Key::Char('+' | '?'), true) => Chord {
+            (Key::Char('-'), true) => Chord {
+                modifiers: modifiers.without(Modifier::Shift),
+                key: Key::Char('_'),
+            },
+            (Key::Char('+' | '?' | '_'), true) => Chord {
                 modifiers: modifiers.without(Modifier::Shift),
                 key,
             },

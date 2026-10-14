@@ -12,7 +12,7 @@
 - A press with AltGr held (`KeyInput::alt_gr`) types text: it resolves to nothing and is never in the
   Primary form. Chords never contain AltGr.
 - A chord's key is the key with Shift not applied. `Chord::new` writes the symbols Shift makes on a US
-  layout (`Shift+=` as `+`, `Shift+/` as `?`) as the symbol with no Shift, as menus write them.
+  layout (`Shift+=` as `+`, `Shift+/` as `?`, `Shift+-` as `_`) as the symbol with no Shift, as menus write them.
 - Text fields keep typing and editing keys without Ctrl, Alt or Super; terminals also keep plain Ctrl, but for the text size keys.
 - The overrides format is lines, not TOML: the core stays serde-free; one line per chord; a bad line is
   reported and skipped. TOML or JSON users build `Overrides::from_entries`.

@@ -418,3 +418,51 @@ fn overrides_of_unregistered_app_actions_wait_until_registered() {
     );
     assert_eq!(keymap.resolve(&input("Ctrl+Alt+N"), Context::Normal), None);
 }
+
+/// Raw presses as a window reports them: the key with Shift not applied, Shift in the modifiers.
+#[test]
+fn shifted_minus_and_equals_in_a_terminal() {
+    use StandardAction as S;
+    let ctrl_shift = Modifiers::of(Modifier::Ctrl).with(Modifier::Shift);
+    let gnome = Platform::Linux {
+        desktop: Desktop::Gnome,
+    };
+    let ours = Platform::Linux {
+        desktop: Desktop::Ours,
+    };
+    let cases: &[(&str, Platform, char, Option<S>, bool)] = &[
+        // Ctrl+Shift+- is Ctrl+_, the program's undo: not bound and not in the Primary form.
+        ("ctrl underscore off our desktop", gnome, '-', None, false),
+        (
+            "ctrl underscore on windows",
+            Platform::Windows,
+            '-',
+            None,
+            false,
+        ),
+        (
+            "ctrl plus off our desktop",
+            gnome,
+            '=',
+            Some(S::Bigger),
+            false,
+        ),
+        // On our desktop keycap sends ⌘ as Ctrl+Shift: these are ⌘- and ⌘=.
+        ("keycap's command minus", ours, '-', Some(S::Smaller), true),
+        ("keycap's command equals", ours, '=', Some(S::Bigger), true),
+    ];
+    for (name, platform, key, expected, primary_form) in cases {
+        let keymap = Keymap::conventional(*platform);
+        let press = KeyInput::new(ctrl_shift, Key::Char(*key));
+        assert_eq!(
+            keymap.resolve(&press, Context::Terminal),
+            expected.map(Action::Standard),
+            "{name}"
+        );
+        assert_eq!(
+            keymap.is_primary_form(&press, Context::Terminal),
+            *primary_form,
+            "{name}"
+        );
+    }
+}
