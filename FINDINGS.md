@@ -4,7 +4,8 @@
 
 - Primary is Command (Super) on macOS and on our desktop, Ctrl on Windows and other Linux. In a
   terminal, Primary is Super on macOS and our desktop and Ctrl+Shift elsewhere, and plain Ctrl is never
-  matched. On our desktop a terminal also accepts Ctrl+Shift for Primary (keycap remaps Command to it
+  matched except with `=`, `-` and `0`, the text size keys every terminal takes (Ctrl+_, with Shift,
+  stays the program's). On our desktop a terminal also accepts Ctrl+Shift for Primary (keycap remaps Command to it
   there), as an input alias that resolves to the same action and displays as the Super form. A Primary
   chord that already uses Shift is Ctrl+Shift+Alt+key in a terminal off the Mac style (temor's
   stand-in for Redo, Save As, Find Previous); one that also uses Alt has no terminal form.
@@ -12,7 +13,7 @@
   Primary form. Chords never contain AltGr.
 - A chord's key is the key with Shift not applied. `Chord::new` writes the symbols Shift makes on a US
   layout (`Shift+=` as `+`, `Shift+/` as `?`) as the symbol with no Shift, as menus write them.
-- Text fields keep typing and editing keys without Ctrl, Alt or Super; terminals also keep plain Ctrl.
+- Text fields keep typing and editing keys without Ctrl, Alt or Super; terminals also keep plain Ctrl, but for the text size keys.
 - The overrides format is lines, not TOML: the core stays serde-free; one line per chord; a bad line is
   reported and skipped. TOML or JSON users build `Overrides::from_entries`.
 - Person-layer entries for app actions nobody registered stay dormant (`Keymap::dormant_overrides`) and

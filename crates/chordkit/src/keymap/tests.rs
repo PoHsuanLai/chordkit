@@ -148,11 +148,36 @@ fn resolution_follows_platform_and_context() {
             Some(S::Redo),
         ),
         (
-            "mac plus via shift equals",
+            "mac bigger on the equals key",
             Platform::MacOs,
             Context::Normal,
-            "Super+Shift+=",
+            "Super+=",
             Some(S::Bigger),
+        ),
+        (
+            "the text size keys are the window's in a terminal",
+            Platform::Windows,
+            Context::Terminal,
+            "Ctrl+=",
+            Some(S::Bigger),
+        ),
+        (
+            "smaller in a terminal",
+            Platform::Linux {
+                desktop: Desktop::Gnome,
+            },
+            Context::Terminal,
+            "Ctrl+-",
+            Some(S::Smaller),
+        ),
+        (
+            "ctrl underscore stays the program's",
+            Platform::Linux {
+                desktop: Desktop::Gnome,
+            },
+            Context::Terminal,
+            "Ctrl+Shift+-",
+            None,
         ),
     ];
     for (name, platform, context, text, expected) in cases {

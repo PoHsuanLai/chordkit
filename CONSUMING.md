@@ -109,7 +109,8 @@ let shown: Vec<String> = keymap
 A terminal (temor) passes `Context::Terminal` and drops its own keymap. The rules:
 
 - Primary in a terminal is Super on macOS and on our desktop, and Ctrl+Shift elsewhere, so plain Ctrl
-  stays the program's.
+  stays the program's. The one exception is the text size: Ctrl alone with `=`, `-` or `0` is Bigger,
+  Smaller and Actual Size there too, as in GNOME Terminal, Konsole and Windows Terminal.
 - On our desktop the compositor (keycap) remaps Command to Ctrl+Shift for terminal windows, so
   `resolve` accepts both Super+D and Ctrl+Shift+D in `Context::Terminal` and finds the same action;
   menus show the Super form (`⌘D`). Other platforms have no alias.

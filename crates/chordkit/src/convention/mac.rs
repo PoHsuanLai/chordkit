@@ -34,7 +34,8 @@ pub(super) static ROWS: &[TableRow] = &[
     (S::Underline, Key("Primary+U")),
     (S::ShowFonts, Key("Primary+T")),
     (S::ShowColors, Key("Primary+Shift+C")),
-    (S::Bigger, Key("Primary++")),
+    // ⌘=, the key ⌘+ is on, with no Shift to hold.
+    (S::Bigger, Key("Primary+=")),
     (S::Smaller, Key("Primary+-")),
     (S::ActualSize, Key("Primary+0")),
     (S::Hide, Key("Primary+H")),

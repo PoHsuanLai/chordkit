@@ -37,12 +37,14 @@ fn winners(entries: &[Entry]) -> Vec<&Entry> {
 }
 
 /// Whether `chord` may fire in `context`: a text field keeps typing keys, and a terminal also
-/// keeps plain Ctrl for the program.
+/// keeps plain Ctrl for the program, all but the text size keys.
 pub(crate) fn allowed(context: Context, chord: Chord) -> bool {
     match context {
         Context::Normal => true,
         Context::TextEntry => !chord.belongs_to_text_field(),
-        Context::Terminal => !chord.belongs_to_text_field() && !chord.is_plain_ctrl(),
+        Context::Terminal => {
+            !chord.belongs_to_text_field() && (!chord.is_plain_ctrl() || chord.is_text_size())
+        }
     }
 }
 

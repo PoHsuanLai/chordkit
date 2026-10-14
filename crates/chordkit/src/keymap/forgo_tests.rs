@@ -300,11 +300,11 @@ fn changes_to_actions_nobody_registered_stay_dormant() {
 
 #[test]
 fn a_default_that_cannot_fire_in_a_terminal_falls_back() {
-    // Primary+Ctrl+= is Ctrl+Shift+= (read as Ctrl++) in a Windows terminal: plain Ctrl, which
-    // the program keeps, so it cannot fire there and the fallback serves.
+    // Primary+Alt+= is Ctrl+Shift+Alt+= (read as Ctrl+Alt++) in a Windows terminal: plain Ctrl,
+    // which the program keeps, so it cannot fire there and the fallback serves.
     let registration = Registration::new(&temor()).action_with_fallback(
         action("temor.equalize"),
-        chord("Primary+Ctrl+="),
+        chord("Primary+Alt+="),
         chord("Primary+Alt+0"),
     );
     let mut keymap = Keymap::conventional(Platform::Windows);
