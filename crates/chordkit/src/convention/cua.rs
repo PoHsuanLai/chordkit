@@ -53,6 +53,7 @@ pub(super) static ROWS: &[TableRow] = &[
     ),
     (S::Bigger, Key("Primary++")),
     (S::Smaller, Key("Primary+-")),
+    (S::ActualSize, Key("Primary+0")),
     (S::Hide, Unbound("Apps are minimised here, not hidden.")),
     (
         S::HideOthers,

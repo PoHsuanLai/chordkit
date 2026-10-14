@@ -24,7 +24,7 @@ impl StandardAction {
     /// | Reach | Actions |
     /// |---|---|
     /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, find next, find previous, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches |
-    /// | IfOffered | paste and match style, use selection for find, jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
+    /// | IfOffered | paste and match style, use selection for find, jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, actual size, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
     pub fn reach(self) -> Reach {
         use StandardAction as S;
         match self {
@@ -38,6 +38,7 @@ impl StandardAction {
             | S::ShowColors
             | S::Bigger
             | S::Smaller
+            | S::ActualSize
             | S::New
             | S::Open
             | S::Save
@@ -122,6 +123,6 @@ mod tests {
         let offered = StandardAction::all()
             .filter(|a| a.reach() == Reach::IfOffered)
             .count();
-        assert_eq!(offered, 20);
+        assert_eq!(offered, 21);
     }
 }

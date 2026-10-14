@@ -36,6 +36,7 @@ pub(super) static ROWS: &[TableRow] = &[
     (S::ShowColors, Key("Primary+Shift+C")),
     (S::Bigger, Key("Primary++")),
     (S::Smaller, Key("Primary+-")),
+    (S::ActualSize, Key("Primary+0")),
     (S::Hide, Key("Primary+H")),
     (S::HideOthers, Key("Alt+Primary+H")),
     (S::Minimize, Key("Primary+M")),

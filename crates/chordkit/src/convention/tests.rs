@@ -19,7 +19,7 @@ fn every_standard_action_has_a_default_or_a_reason_on_every_platform() {
                 "{platform:?} has no row, or an unreadable row, for {action:?}"
             );
         }
-        assert_eq!(table.iter().count(), 66, "{platform:?}");
+        assert_eq!(table.iter().count(), 67, "{platform:?}");
     }
 }
 
@@ -75,6 +75,9 @@ fn conventions_resolve_to_the_expected_chords() {
             "Alt+Shift+Super+V",
         ),
         (Platform::MacOs, StandardAction::Bigger, "Super++"),
+        (Platform::MacOs, StandardAction::ActualSize, "Super+0"),
+        (Platform::Windows, StandardAction::ActualSize, "Ctrl+0"),
+        (gnome, StandardAction::ActualSize, "Ctrl+0"),
         (ours, StandardAction::Copy, "Super+C"),
         (ours, StandardAction::LockScreen, "Ctrl+Super+Q"),
         (Platform::Windows, StandardAction::Copy, "Ctrl+C"),

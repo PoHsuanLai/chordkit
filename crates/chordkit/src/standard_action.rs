@@ -79,6 +79,8 @@ pub enum StandardAction {
     Bigger,
     /// Make things smaller.
     Smaller,
+    /// Back to the actual size, after bigger or smaller.
+    ActualSize,
     /// Hide the app.
     Hide,
     /// Hide every other app.
@@ -176,6 +178,7 @@ const NAMED: &[Named] = &[
     (StandardAction::ShowColors, "show-colors"),
     (StandardAction::Bigger, "bigger"),
     (StandardAction::Smaller, "smaller"),
+    (StandardAction::ActualSize, "actual-size"),
     (StandardAction::Hide, "hide"),
     (StandardAction::HideOthers, "hide-others"),
     (StandardAction::Minimize, "minimize"),
@@ -266,9 +269,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn there_are_sixty_six_and_slugs_are_unique_and_round_trip() {
+    fn there_are_sixty_seven_and_slugs_are_unique_and_round_trip() {
         let all: Vec<StandardAction> = StandardAction::all().collect();
-        assert_eq!(all.len(), 66);
+        assert_eq!(all.len(), 67);
         let mut slugs: Vec<String> = all.iter().map(|a| a.slug()).collect();
         for (action, slug) in all.iter().zip(&slugs) {
             assert!(!slug.is_empty(), "{action:?} has no slug");
@@ -276,7 +279,7 @@ mod tests {
         }
         slugs.sort();
         slugs.dedup();
-        assert_eq!(slugs.len(), 66);
+        assert_eq!(slugs.len(), 67);
     }
 
     #[test]
