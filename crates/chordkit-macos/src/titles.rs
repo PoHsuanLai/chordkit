@@ -57,6 +57,14 @@ pub const ENGLISH: MenuTitles = MenuTitles {
         ("Hide Sidebar", StandardAction::ToggleSidebar),
         ("Enter Full Screen", StandardAction::FullScreen),
         ("Exit Full Screen", StandardAction::FullScreen),
+        ("Top Left", StandardAction::TileTopLeft),
+        ("Top Right", StandardAction::TileTopRight),
+        ("Bottom Left", StandardAction::TileBottomLeft),
+        ("Bottom Right", StandardAction::TileBottomRight),
+        (
+            "Return to Previous Size",
+            StandardAction::ReturnToPreviousSize,
+        ),
     ],
 };
 
@@ -116,6 +124,7 @@ mod tests {
             ("Copy", "@~c"),
             ("Save As\u{2026}", "@$s"),
             ("Mystery Item", "@m"),
+            ("Return to Previous Size", "^~r"),
             ("Cut", "@$"),
         ];
         let import = import_user_key_equivalents(&ENGLISH, pairs);
@@ -124,7 +133,11 @@ mod tests {
             canonical(&import, StandardAction::SaveAs),
             ["Shift+Super+S"]
         );
-        assert_eq!(import.bindings.len(), 2);
+        assert_eq!(
+            canonical(&import, StandardAction::ReturnToPreviousSize),
+            ["Ctrl+Alt+R"]
+        );
+        assert_eq!(import.bindings.len(), 3);
         assert_eq!(import.problems.len(), 1);
         assert!(import.problems[0].contains("Cut"));
     }

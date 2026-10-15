@@ -28,6 +28,21 @@
   form. Open: the fallback is not tried when the first default has a form but collides; that row is
   refused.
 
+- Window tiling (Tile Left, Right, Top, Bottom, the four quarters, Fill, Center, Return to Previous Size)
+  follows Sequoia's Window > Move & Resize menu. Apple's keys are Globe(Fn)+Ctrl+Left, Right, Up, Down,
+  F, C, R; the quarters have no Apple key (only the "& Quarters" arrangements have, with Shift). Fn is
+  not a `Modifier`: a Linux keyboard mostly keeps Fn in its firmware, XKB does not treat a reported
+  KEY_FN as a modifier, and macOS itself refuses Globe in custom shortcuts. So the Mac-style table
+  (macOS and our desktop) swaps Fn for Alt: Ctrl+Alt+Left, Right, Up, Down for the halves,
+  Ctrl+Alt+F Fill, Ctrl+Alt+C Center, Ctrl+Alt+R Return to Previous Size, and the quarters take the
+  Ctrl+Alt+U, I, J, K square that Rectangle and Magnet use. The Ctrl-arrow Space and Mission
+  Control keys stay as they are. The Ctrl-based base (Windows, GNOME, Plasma, other) binds the keys
+  all three desktops share: Super+Left and Super+Right tile, Super+Up fills; the rest are unbound
+  with a reason, because Ctrl+Alt+arrows are the Space keys there. The name is `Center` (US
+  spelling, as `Minimize` and `ShowColors`). The tiles are `Universal`: the desktop does them.
+  These Ctrl+Alt keys are desktop keys: as plain-Ctrl chords an app in a terminal context would not
+  see them, which is right because the compositor takes them first.
+
 ## Sources
 
 - KDE: reads the `[Shortcuts]` group of kdeglobals (KStandardShortcut names to standard actions).
@@ -70,6 +85,13 @@
 - `Platform::meta_as` folds Meta into Super everywhere. Toolkits disagree (Qt's Meta is the OS key;
   GDK's Meta is usually Alt); revisit when quire's real event source is wired.
 - The shifted-symbol folding is US-layout only.
+- Window tiling in sources: GNOME keys `maximize`, `move-to-center` (wm keybindings) and
+  `toggle-tiled-left`, `toggle-tiled-right` (org/gnome/mutter/keybindings) are mapped from memory;
+  verify against a real `dconf dump /`. KDE's tiling actions are kwin global shortcuts, not
+  KStandardShortcut names, so `chordkit-kde` maps none. The macOS title table maps only the titles that
+  are unambiguous in an app's menus (the four quarters, Return to Previous Size); "Left", "Right",
+  "Top", "Bottom", "Fill" and "Center" also name text alignment and fill items, so they stay out until
+  the importer knows which menu a title came from.
 - `StandardAction` has no text-editing actions (word moves, line deletes); add them when a source
   (macOS DefaultKeyBinding) or an app needs them.
 - On our desktop in a terminal, Ctrl+Shift+Z is read as Super+Z (Undo), so Redo (Super+Shift+Z)

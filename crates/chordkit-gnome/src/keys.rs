@@ -8,6 +8,7 @@ const WM: &str = "org/gnome/desktop/wm/keybindings";
 const MEDIA: &str = "org/gnome/settings-daemon/plugins/media-keys";
 const SHELL: &str = "org/gnome/shell/keybindings";
 const MUTTER: &str = "org/gnome/mutter";
+const MUTTER_KEYS: &str = "org/gnome/mutter/keybindings";
 
 /// (group, key, action).
 const MAPPINGS: &[Mapping] = &[
@@ -23,6 +24,10 @@ const MAPPINGS: &[Mapping] = &[
     (WM, "switch-to-workspace-right", StandardAction::SpaceRight),
     (WM, "switch-input-source", StandardAction::NextInputSource),
     (WM, "toggle-fullscreen", StandardAction::FullScreen),
+    (WM, "maximize", StandardAction::Fill),
+    (WM, "move-to-center", StandardAction::Center),
+    (MUTTER_KEYS, "toggle-tiled-left", StandardAction::TileLeft),
+    (MUTTER_KEYS, "toggle-tiled-right", StandardAction::TileRight),
     (MEDIA, "screensaver", StandardAction::LockScreen),
     (MEDIA, "logout", StandardAction::LogOut),
     (MEDIA, "screenshot", StandardAction::ScreenshotScreen),

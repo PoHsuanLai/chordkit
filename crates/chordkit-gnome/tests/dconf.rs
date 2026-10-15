@@ -61,6 +61,11 @@ fn load_lays_the_dump_over_gnomes_conventions() {
     assert_eq!(press(&keymap, "Alt+Tab"), standard(StandardAction::NextApp));
     assert_eq!(press(&keymap, "Super+Tab"), None);
     assert_eq!(
+        press(&keymap, "Alt+Super+Left"),
+        standard(StandardAction::TileLeft)
+    );
+    assert_eq!(press(&keymap, "Super+Left"), None);
+    assert_eq!(
         press(&keymap, "Super+L"),
         standard(StandardAction::LockScreen)
     );

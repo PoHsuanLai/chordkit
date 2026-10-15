@@ -13,5 +13,8 @@ close=['<Alt>F4']
 screensaver=['<Super>l']
 logout='disabled'
 
+[org/gnome/mutter/keybindings]
+toggle-tiled-left=['<Super><Alt>Left']
+
 [org/gnome/mutter]
 overlay-key='Super_L'
