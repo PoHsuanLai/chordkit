@@ -139,6 +139,28 @@ pub enum StandardAction {
     SpaceLeft,
     /// Go to the Space on the right.
     SpaceRight,
+    /// Tile the window on the left half of the screen.
+    TileLeft,
+    /// Tile the window on the right half of the screen.
+    TileRight,
+    /// Tile the window on the top half of the screen.
+    TileTop,
+    /// Tile the window on the bottom half of the screen.
+    TileBottom,
+    /// Tile the window in the top left quarter of the screen.
+    TileTopLeft,
+    /// Tile the window in the top right quarter of the screen.
+    TileTopRight,
+    /// Tile the window in the bottom left quarter of the screen.
+    TileBottomLeft,
+    /// Tile the window in the bottom right quarter of the screen.
+    TileBottomRight,
+    /// Make the window fill the screen without going full screen.
+    Fill,
+    /// Move the window to the middle of the screen, keeping its size.
+    Center,
+    /// Give the window the size and place it had before it was tiled, filled or centred.
+    ReturnToPreviousSize,
     /// Go to Space `n`.
     SwitchToSpace(SpaceNumber),
 }
@@ -208,6 +230,20 @@ const NAMED: &[Named] = &[
     (StandardAction::AppWindows, "app-windows"),
     (StandardAction::SpaceLeft, "space-left"),
     (StandardAction::SpaceRight, "space-right"),
+    (StandardAction::TileLeft, "tile-left"),
+    (StandardAction::TileRight, "tile-right"),
+    (StandardAction::TileTop, "tile-top"),
+    (StandardAction::TileBottom, "tile-bottom"),
+    (StandardAction::TileTopLeft, "tile-top-left"),
+    (StandardAction::TileTopRight, "tile-top-right"),
+    (StandardAction::TileBottomLeft, "tile-bottom-left"),
+    (StandardAction::TileBottomRight, "tile-bottom-right"),
+    (StandardAction::Fill, "fill"),
+    (StandardAction::Center, "center"),
+    (
+        StandardAction::ReturnToPreviousSize,
+        "return-to-previous-size",
+    ),
 ];
 
 const SPACE_SLUG: &str = "switch-to-space-";
@@ -269,9 +305,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn there_are_sixty_seven_and_slugs_are_unique_and_round_trip() {
+    fn there_are_seventy_eight_and_slugs_are_unique_and_round_trip() {
         let all: Vec<StandardAction> = StandardAction::all().collect();
-        assert_eq!(all.len(), 67);
+        assert_eq!(all.len(), 78);
         let mut slugs: Vec<String> = all.iter().map(|a| a.slug()).collect();
         for (action, slug) in all.iter().zip(&slugs) {
             assert!(!slug.is_empty(), "{action:?} has no slug");
@@ -279,12 +315,21 @@ mod tests {
         }
         slugs.sort();
         slugs.dedup();
-        assert_eq!(slugs.len(), 67);
+        assert_eq!(slugs.len(), 78);
     }
 
     #[test]
     fn labels_are_plain_words_and_bad_slugs_are_refused() {
         assert_eq!(StandardAction::SelectAll.label(), "select all");
+        assert_eq!(StandardAction::TileTopLeft.label(), "tile top left");
+        assert_eq!(
+            StandardAction::ReturnToPreviousSize.label(),
+            "return to previous size"
+        );
+        assert_eq!(
+            StandardAction::from_slug("center"),
+            Some(StandardAction::Center)
+        );
         assert_eq!(StandardAction::from_slug("switch-to-space-0"), None);
         assert_eq!(StandardAction::from_slug("switch-to-space-10"), None);
         assert_eq!(StandardAction::from_slug("teleport"), None);

@@ -113,4 +113,40 @@ pub(super) static ROWS: &[TableRow] = &[
     ),
     (S::SpaceLeft, Key("Ctrl+Alt+Left")),
     (S::SpaceRight, Key("Ctrl+Alt+Right")),
+    // Super+arrows tile in Windows, GNOME and Plasma alike; Ctrl+Alt+arrows are the Space keys.
+    (S::TileLeft, Key("Super+Left")),
+    (S::TileRight, Key("Super+Right")),
+    (
+        S::TileTop,
+        Unbound("There is no common key for a top half; Super+Up fills the screen."),
+    ),
+    (
+        S::TileBottom,
+        Unbound("There is no common key for a bottom half; Super+Down restores or minimises."),
+    ),
+    (
+        S::TileTopLeft,
+        Unbound("There is no common single key for a quarter of the screen."),
+    ),
+    (
+        S::TileTopRight,
+        Unbound("There is no common single key for a quarter of the screen."),
+    ),
+    (
+        S::TileBottomLeft,
+        Unbound("There is no common single key for a quarter of the screen."),
+    ),
+    (
+        S::TileBottomRight,
+        Unbound("There is no common single key for a quarter of the screen."),
+    ),
+    (S::Fill, Key("Super+Up")),
+    (
+        S::Center,
+        Unbound("There is no common key for centring a window."),
+    ),
+    (
+        S::ReturnToPreviousSize,
+        Unbound("There is no common key for returning a window to its size before tiling."),
+    ),
 ];

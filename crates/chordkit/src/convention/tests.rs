@@ -19,7 +19,7 @@ fn every_standard_action_has_a_default_or_a_reason_on_every_platform() {
                 "{platform:?} has no row, or an unreadable row, for {action:?}"
             );
         }
-        assert_eq!(table.iter().count(), 67, "{platform:?}");
+        assert_eq!(table.iter().count(), 78, "{platform:?}");
     }
 }
 
@@ -81,6 +81,16 @@ fn conventions_resolve_to_the_expected_chords() {
         (Platform::Windows, StandardAction::ActualSize, "Ctrl+0"),
         (gnome, StandardAction::ActualSize, "Ctrl+0"),
         (ours, StandardAction::Copy, "Super+C"),
+        (ours, StandardAction::TileLeft, "Ctrl+Alt+Left"),
+        (ours, StandardAction::TileBottomRight, "Ctrl+Alt+K"),
+        (Platform::MacOs, StandardAction::Fill, "Ctrl+Alt+F"),
+        (
+            Platform::MacOs,
+            StandardAction::ReturnToPreviousSize,
+            "Ctrl+Alt+R",
+        ),
+        (Platform::Windows, StandardAction::TileRight, "Super+Right"),
+        (gnome, StandardAction::Fill, "Super+Up"),
         (ours, StandardAction::LockScreen, "Ctrl+Super+Q"),
         (Platform::Windows, StandardAction::Copy, "Ctrl+C"),
         (Platform::Windows, StandardAction::Redo, "Ctrl+Y"),

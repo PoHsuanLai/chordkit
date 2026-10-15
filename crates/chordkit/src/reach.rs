@@ -23,7 +23,7 @@ impl StandardAction {
     ///
     /// | Reach | Actions |
     /// |---|---|
-    /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, find next, find previous, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches |
+    /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, find next, find previous, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches, the window tiles (halves and quarters), fill, center, return to previous size |
     /// | IfOffered | paste and match style, use selection for find, jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, actual size, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
     pub fn reach(self) -> Reach {
         use StandardAction as S;
@@ -86,6 +86,17 @@ impl StandardAction {
             | S::AppWindows
             | S::SpaceLeft
             | S::SpaceRight
+            | S::TileLeft
+            | S::TileRight
+            | S::TileTop
+            | S::TileBottom
+            | S::TileTopLeft
+            | S::TileTopRight
+            | S::TileBottomLeft
+            | S::TileBottomRight
+            | S::Fill
+            | S::Center
+            | S::ReturnToPreviousSize
             | S::SwitchToSpace(_) => Reach::Universal,
         }
     }
@@ -103,6 +114,8 @@ mod tests {
         let cases: &[Case] = &[
             (S::Copy, Reach::Universal),
             (S::Quit, Reach::Universal),
+            (S::TileTopLeft, Reach::Universal),
+            (S::ReturnToPreviousSize, Reach::Universal),
             (S::Find, Reach::Universal),
             (
                 S::SwitchToSpace(SpaceNumber::new(3).unwrap_or_else(|| panic!("3"))),

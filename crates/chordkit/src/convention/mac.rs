@@ -67,4 +67,18 @@ pub(super) static ROWS: &[TableRow] = &[
     (S::AppWindows, Key("Ctrl+Down")),
     (S::SpaceLeft, Key("Ctrl+Left")),
     (S::SpaceRight, Key("Ctrl+Right")),
+    // Apple's tiling keys are Globe+Ctrl+key. Globe (Fn) is not a modifier a Linux keyboard
+    // reports, so Alt takes its place; the quarters have no Apple key and follow the
+    // window-manager apps' Ctrl+Alt+U, I, J, K square.
+    (S::TileLeft, Key("Ctrl+Alt+Left")),
+    (S::TileRight, Key("Ctrl+Alt+Right")),
+    (S::TileTop, Key("Ctrl+Alt+Up")),
+    (S::TileBottom, Key("Ctrl+Alt+Down")),
+    (S::TileTopLeft, Key("Ctrl+Alt+U")),
+    (S::TileTopRight, Key("Ctrl+Alt+I")),
+    (S::TileBottomLeft, Key("Ctrl+Alt+J")),
+    (S::TileBottomRight, Key("Ctrl+Alt+K")),
+    (S::Fill, Key("Ctrl+Alt+F")),
+    (S::Center, Key("Ctrl+Alt+C")),
+    (S::ReturnToPreviousSize, Key("Ctrl+Alt+R")),
 ];
