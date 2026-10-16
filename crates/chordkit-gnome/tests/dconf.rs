@@ -94,3 +94,18 @@ fn a_missing_dump_is_the_conventions() {
         standard(StandardAction::NextApp)
     );
 }
+
+#[test]
+fn a_folder_instead_of_a_dump_is_an_error_in_words() {
+    let folder = fixture().parent().map(PathBuf::from).unwrap_or_default();
+    let error = GnomeSource::new(folder)
+        .load(GNOME)
+        .err()
+        .map(|e| e.to_string())
+        .unwrap_or_default();
+    assert!(
+        error.starts_with("couldn't read the shortcut settings at "),
+        "{error}"
+    );
+    assert!(error.ends_with("it is not a plain file"), "{error}");
+}

@@ -103,4 +103,5 @@ fn an_unreadable_path_is_an_error_in_words() {
         error.starts_with("couldn't read the shortcut settings at "),
         "{error}"
     );
+    assert!(error.ends_with("it is not a plain file"), "{error}");
 }

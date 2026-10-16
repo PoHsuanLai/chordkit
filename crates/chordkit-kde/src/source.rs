@@ -1,9 +1,9 @@
 //! `KdeSource`: kdeglobals from an injected path, over KDE's conventions.
 
-use std::io::ErrorKind;
 use std::path::PathBuf;
 
 use chordkit::{Keymap, KeymapSource, Platform, SourceError};
+use chordkit_file::{ReadError, SETTINGS_FILE_LIMIT, read_text};
 
 use crate::parse::parse_kdeglobals;
 
@@ -23,9 +23,9 @@ impl KdeSource {
 
 impl KeymapSource for KdeSource {
     fn load(&self, platform: Platform) -> Result<Keymap, SourceError> {
-        let text = match std::fs::read_to_string(&self.path) {
+        let text = match read_text(&self.path, SETTINGS_FILE_LIMIT) {
             Ok(text) => text,
-            Err(error) if error.kind() == ErrorKind::NotFound => String::new(),
+            Err(ReadError::Missing) => String::new(),
             Err(error) => {
                 return Err(SourceError::Read {
                     place: self.path.display().to_string(),

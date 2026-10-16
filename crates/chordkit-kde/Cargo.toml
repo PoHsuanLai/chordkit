@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 chordkit.workspace = true
+chordkit-file.workspace = true
 
 [lints]
 workspace = true

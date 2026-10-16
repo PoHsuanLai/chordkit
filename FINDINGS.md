@@ -71,6 +71,13 @@
 - Windows has no central or user-editable keymap: standard chords are built into the common controls,
   app accelerators are per app, and RegisterHotKey hotkeys cannot be listed. The source is the
   conventions table plus the reserved chords (any Win+key, Alt+Tab, Ctrl+Alt+Del, Ctrl+Esc).
+- Foreign settings files are read through `chordkit-file` only (INPUT-12): opened without blocking (a pipe
+  cannot stop `open`), regular files only (links are followed, then the target is checked), 4 MiB at most
+  (`SETTINGS_FILE_LIMIT`), UTF-8 only. A refusal is a `ReadError`, which a source turns into
+  `SourceError::Read`; the caller skips the source and logs it. A missing file is not an error (nothing
+  was changed). Open: keycap (`keycap-client/src/fallback.rs`, `keycap/src/keymap/file.rs`) and palmrest
+  (`config/load.rs`) still open their own files; they take `chordkit-file` in their own repos (pin
+  `chordkit-file` by git rev, as keycap pins `chordkit`).
 - Change notification: the trait is a callback; no source here implements a file watcher (that would
   need a watcher crate in a source crate). The default `watch` never fires.
 

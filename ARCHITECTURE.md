@@ -12,11 +12,15 @@ the resolver. `CONVENTIONS.md` holds the shared rules (with the deviations liste
 | `chordkit-kde` | `crates/chordkit-kde` | `KdeSource`, `parse_kdeglobals` | `chordkit` |
 | `chordkit-gnome` | `crates/chordkit-gnome` | `GnomeSource`, `parse_dconf_dump`, `parse_accelerator` | `chordkit` |
 | `chordkit-macos` | `crates/chordkit-macos` | `parse_key_equivalent`, `ENGLISH` menu titles, `import_user_key_equivalents` | `chordkit` |
+| `chordkit-file` | `crates/chordkit-file` | `read_text`, `read_bytes`, `ReadError`, `ByteLimit`, `SETTINGS_FILE_LIMIT`: the one bounded reader for a foreign desktop's settings files | `thiserror`; `libc` (unix) |
 
-Edges: every source crate depends on `chordkit` only; `chordkit` depends on no workspace crate.
+Edges: every source crate depends on `chordkit` (and a file-reading one on `chordkit-file`); `chordkit` depends on no
+workspace crate; `chordkit-file` depends on none either, so a program that reads a settings file of its own
+(keycap, palmrest) can take it without taking the keymap core. It is its own crate because the core is I/O-free
+by design and the boundary script keeps it so.
 `scripts/check-boundary.sh` asserts the core and `chordkit-macos` reach no I/O, runtime, bus,
-file-watching or plist crate. The only file reads are in `KdeSource::load` and `GnomeSource::load`
-(a path injected by the caller). Our desktop's source is not here: keycap implements
+file-watching or plist crate (nor `chordkit-file`). The only file reads are in `KdeSource::load` and
+`GnomeSource::load` (a path injected by the caller), and both go through `chordkit_file::read_text`. Our desktop's source is not here: keycap implements
 `KeymapSource` in its own repo.
 
 ## 2. Core modules (`crates/chordkit/src`)
@@ -48,6 +52,7 @@ Layers, lowest first; a module imports from its own layer or a lower one.
 | chord text and per-platform display | `chord_text.rs` |
 | the person's overrides format | `overrides.rs` |
 | `[group]`/`key=value` reading | `keyfile.rs` |
+| reading any file that belongs to someone else (open without blocking, regular files only, size limit, UTF-8) | `chordkit-file` (`read_text`) |
 
 ## 4. Recipes
 
@@ -59,7 +64,10 @@ Add a platform family: add the `Platform`/`Desktop` variant, its slug, `Platform
 `meta_as` arms, a display style in `chord_text.rs`, a reserved list, and a convention file.
 
 Add a source: a new crate depending on `chordkit`; parse into `SystemImport`; implement
-`KeymapSource::load` as `Keymap::conventional(platform).with_system(import.bindings)`.
+`KeymapSource::load` as `Keymap::conventional(platform).with_system(import.bindings)`. Read the
+settings file with `chordkit_file::read_text(path, SETTINGS_FILE_LIMIT)`, never `std::fs::read_to_string`: a
+`ReadError::Missing` means nothing was changed (the conventions), any other error becomes
+`SourceError::Read`, which the caller logs and skips.
 
 ## 5. Repo rules
 
