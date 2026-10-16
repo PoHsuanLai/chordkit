@@ -1,4 +1,4 @@
-# cargo-deny licence gate. Run: cargo deny check licenses
+# cargo-deny gate. Run: cargo deny check licenses advisories bans sources
 #
 # A dependency whose licence is not listed fails the gate rather than being noticed later by
 # someone reading Cargo.lock.
@@ -28,7 +28,7 @@ confidence-threshold = 0.9
 # MPL is file-level copyleft: fine to link or depend on, never to paste source from. That
 # position is about the *licence*, so encoding it per-crate would be busywork. Several crates
 # arrive under it by unrelated routes (stylo, app_units, cssparser and selectors in blitz; option-ext
-# through dirs; cosmic-dbus-networkmanager and freedesktop-desktop-entry in the shell), and the
+# through dirs; freedesktop-desktop-entry in the shell), and the
 # versions churn.
 #
 # Depending on them obliges us to make *those files'* source available, which their registries
@@ -38,3 +38,8 @@ confidence-threshold = 0.9
 #
 # What stays out of that list is strong copyleft: GPL, AGPL, EUPL. Those would change what this
 # project may be distributed as, and a dependency arriving under one should stop the build.
+
+# Dependencies come from crates.io only; a git or other-registry source is a decision, not a drift.
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
