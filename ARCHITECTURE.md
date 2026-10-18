@@ -41,7 +41,7 @@ Layers, lowest first; a module imports from its own layer or a lower one.
 | Concept | Home |
 |---|---|
 | what Primary means on a platform and context | `Platform::primary` |
-| Meta folding, shifted-symbol folding | `Chord::new`, `Platform::meta_as`, `KeyInput::normalise` |
+| Meta folding, shifted-symbol folding | `Chord::new`, `Modifier::folded`, `KeyInput::normalise` |
 | default chords | `convention/` (one file per platform family) |
 | chords an app may not take | `reserved.rs` |
 | which binding wins | `keymap/effective.rs` (layers: convention, app, system, person, forgone) |
@@ -60,8 +60,7 @@ Add a standard action: add the variant (documented by what it does, not which ke
 `NAMED` in `standard_action.rs`, add a row to every table in `convention/` (a chord or `Unbound`
 with a reason; the coverage test fails otherwise), bump the count in the two slug tests.
 
-Add a platform family: add the `Platform`/`Desktop` variant, its slug, `Platform::primary` and
-`meta_as` arms, a display style in `chord_text.rs`, a reserved list, and a convention file.
+Add a platform family: add the `Platform`/`Desktop` variant, its slug, a `Platform::primary` arm, a display style in `chord_text.rs`, a reserved list, and a convention file.
 
 Add a source: a new crate depending on `chordkit`; parse into `SystemImport`; implement
 `KeymapSource::load` as `Keymap::conventional(platform).with_system(import.bindings)`. Read the

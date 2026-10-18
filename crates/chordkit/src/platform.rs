@@ -52,6 +52,11 @@ pub enum Context {
 pub struct PlatformError(pub String);
 
 impl Platform {
+    /// Our desktop: the platform every part of it reads its keymap for.
+    pub const OURS: Platform = Platform::Linux {
+        desktop: Desktop::Ours,
+    };
+
     /// Every platform there is a conventions table for.
     pub const ALL: [Platform; 6] = [
         Platform::MacOs,
@@ -104,12 +109,6 @@ impl Platform {
             ) => Some(Modifiers::of(Modifier::Ctrl).with(Modifier::Shift)),
             _ => None,
         }
-    }
-
-    /// The modifier a toolkit's Meta flag means on this platform. Toolkits disagree on Meta;
-    /// the ones that report it at all (Qt) mean the OS key, so every platform folds it there.
-    pub const fn meta_as(self) -> Modifier {
-        Modifier::Super
     }
 
     /// A short stable name, the form `FromStr` reads back.

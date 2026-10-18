@@ -67,15 +67,7 @@ impl KeyInput {
     }
 
     fn chord(&self, platform: Platform, alias: Option<Modifiers>) -> Chord {
-        let meta = platform.meta_as();
-        let fold = |modifier: Modifier| {
-            if modifier == Modifier::Meta {
-                meta
-            } else {
-                modifier
-            }
-        };
-        let held: Modifiers = self.modifiers.iter().map(fold).collect();
+        let held: Modifiers = self.modifiers.iter().map(Modifier::folded).collect();
         let held = match self.alt_gr {
             AltGr::Held => held.without(Modifier::Ctrl).without(Modifier::Alt),
             AltGr::Released => held,

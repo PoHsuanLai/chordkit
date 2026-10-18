@@ -89,7 +89,7 @@
 - Default chords for GNOME screenshots, GNOME and KDE workspace switching, KDE overview and Meta
   display order ("Meta+Ctrl+Alt+Shift") are best-effort; confirm against each desktop's shortcut
   settings page.
-- `Platform::meta_as` folds Meta into Super everywhere. Toolkits disagree (Qt's Meta is the OS key;
+- `Modifier::folded` folds Meta into Super everywhere. Toolkits disagree (Qt's Meta is the OS key;
   GDK's Meta is usually Alt); revisit when quire's real event source is wired.
 - The shifted-symbol folding is US-layout only.
 - Window tiling in sources: GNOME keys `maximize`, `move-to-center` (wm keybindings) and

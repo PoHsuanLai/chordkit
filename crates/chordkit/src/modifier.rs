@@ -1,7 +1,7 @@
 //! The physical modifier keys and sets of them.
 
 /// A modifier key as the hardware has it. `Meta` exists only so a toolkit can report it;
-/// every chord folds it into another modifier (see `Platform::meta_as`).
+/// every chord folds it into Super (see `Modifier::folded`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Modifier {
     /// The Control key.
@@ -25,6 +25,14 @@ impl Modifier {
         Modifier::Super,
         Modifier::Meta,
     ];
+
+    /// Meta is a toolkit's name for Super: the OS key. Chords only ever hold the folded form.
+    pub(crate) const fn folded(self) -> Modifier {
+        match self {
+            Modifier::Meta => Modifier::Super,
+            other => other,
+        }
+    }
 
     const fn bit(self) -> u8 {
         match self {

@@ -17,16 +17,12 @@ impl Chord {
     /// modifier; and the symbols Shift makes on a US layout (`Shift+=` is `+`, `Shift+/` is
     /// `?`, `Shift+-` is `_`) are written as the symbol with no Shift, as menus write them.
     pub fn new(modifiers: Modifiers, key: Key) -> Chord {
-        let modifiers = if modifiers.contains(Modifier::Meta) {
-            modifiers.without(Modifier::Meta).with(Modifier::Super)
-        } else {
-            modifiers
-        };
+        let modifiers: Modifiers = modifiers.iter().map(Modifier::folded).collect();
         let shifted = modifiers.contains(Modifier::Shift);
         match (key, shifted) {
             (Key::Tap(modifier), _) => Chord {
                 modifiers: Modifiers::NONE,
-                key: Key::Tap(fold_meta(modifier)),
+                key: Key::Tap(modifier.folded()),
             },
             (Key::Char('='), true) => Chord {
                 modifiers: modifiers.without(Modifier::Shift),
@@ -84,13 +80,6 @@ impl Chord {
     pub(crate) fn plus_for_equals(self) -> Option<Chord> {
         (self.key == Key::Char('=') && !self.modifiers.contains(Modifier::Shift))
             .then(|| Chord::new(self.modifiers, Key::Char('+')))
-    }
-}
-
-fn fold_meta(modifier: Modifier) -> Modifier {
-    match modifier {
-        Modifier::Meta => Modifier::Super,
-        other => other,
     }
 }
 
