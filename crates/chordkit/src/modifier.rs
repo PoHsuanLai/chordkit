@@ -95,8 +95,7 @@ impl Modifiers {
 
 impl FromIterator<Modifier> for Modifiers {
     fn from_iter<I: IntoIterator<Item = Modifier>>(iter: I) -> Self {
-        iter.into_iter()
-            .fold(Modifiers::NONE, |set, modifier| set.with(modifier))
+        iter.into_iter().fold(Modifiers::NONE, Modifiers::with)
     }
 }
 

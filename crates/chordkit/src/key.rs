@@ -73,8 +73,9 @@ impl Key {
     pub(crate) fn belongs_to_text_field(self) -> bool {
         match self {
             Key::Char(_) => true,
-            Key::Tap(_) => false,
-            Key::Named(NamedKey::Escape | NamedKey::PrintScreen | NamedKey::F(_)) => false,
+            Key::Tap(_) | Key::Named(NamedKey::Escape | NamedKey::PrintScreen | NamedKey::F(_)) => {
+                false
+            }
             Key::Named(_) => true,
         }
     }
