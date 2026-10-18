@@ -51,22 +51,22 @@ impl KeyInput {
         self.alt_gr == AltGr::Held
     }
 
-    /// The canonical chord on `platform`: the Meta flag folds into the modifier the platform
-    /// means by it, letters are lower-cased, and a symbol Shift makes is written without Shift.
+    /// The canonical chord: the Meta flag folds into Super (on every platform, so `platform` is
+    /// kept only for callers that pass one), letters are lower-cased, and a symbol Shift makes is written without Shift.
     /// With AltGr held, Ctrl and Alt are dropped (Windows adds them to AltGr), so the chord can
     /// never match a Ctrl or Alt binding. This is the one place toolkit differences are absorbed.
-    pub fn normalise(&self, platform: Platform) -> Chord {
-        self.chord(platform, None)
+    pub fn normalise(&self, _platform: Platform) -> Chord {
+        self.chord(None)
     }
 
     /// Like `normalise`, and where `context` has an alias for Primary on `platform`
     /// (`Platform::primary_alias`), the alias modifiers are written as the Primary form: on our
     /// desktop in a terminal, Ctrl+Shift+D is Super+D.
     pub fn normalise_in(&self, platform: Platform, context: Context) -> Chord {
-        self.chord(platform, platform.primary_alias(context))
+        self.chord(platform.primary_alias(context))
     }
 
-    fn chord(&self, platform: Platform, alias: Option<Modifiers>) -> Chord {
+    fn chord(&self, alias: Option<Modifiers>) -> Chord {
         let held: Modifiers = self.modifiers.iter().map(Modifier::folded).collect();
         let held = match self.alt_gr {
             AltGr::Held => held.without(Modifier::Ctrl).without(Modifier::Alt),
@@ -80,7 +80,7 @@ impl KeyInput {
         };
         let key = match self.key {
             Key::Char(c) => Key::character(c),
-            Key::Tap(modifier) => Key::Tap(fold(modifier)),
+            Key::Tap(modifier) => Key::Tap(modifier.folded()),
             named @ Key::Named(_) => named,
         };
         Chord::new(modifiers, key)
