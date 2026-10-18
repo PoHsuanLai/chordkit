@@ -9,10 +9,11 @@ use crate::platform::Platform;
 use crate::standard_action::StandardAction;
 
 macro_rules! string_serde {
-    ($ty:ty, $write:ident) => {
+    ($ty:ty, $v:ident => $text:expr) => {
         impl Serialize for $ty {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-                serializer.serialize_str(&self.$write())
+                let $v = self;
+                serializer.serialize_str(&$text)
             }
         }
 
@@ -25,31 +26,12 @@ macro_rules! string_serde {
     };
 }
 
-impl Platform {
-    fn to_text(self) -> String {
-        self.slug().to_owned()
-    }
-}
-
-impl AppAction {
-    fn to_text(&self) -> String {
-        self.id().to_owned()
-    }
-}
-
-impl StandardAction {
-    fn to_text(self) -> String {
-        self.slug()
-    }
-}
-
-string_serde!(Chord, canonical);
-string_serde!(DefaultChord, canonical);
-string_serde!(Action, id);
-string_serde!(AppAction, to_text);
-string_serde!(Platform, to_text);
-
-string_serde!(StandardAction, to_text);
+string_serde!(Chord, c => c.canonical());
+string_serde!(DefaultChord, c => c.canonical());
+string_serde!(Action, a => a.id());
+string_serde!(AppAction, a => a.id());
+string_serde!(Platform, p => p.slug());
+string_serde!(StandardAction, a => a.slug());
 
 #[cfg(test)]
 mod tests {
