@@ -71,14 +71,14 @@ fn from_current_desktop(token: &str) -> Option<Desktop> {
     match token {
         "kde" | "plasma" => Some(Desktop::Kde),
         "gnome" | "gnome-classic" => Some(Desktop::Gnome),
-        "sill" => Some(Desktop::Ours),
+        "quire" | "sill" => Some(Desktop::Ours),
         _ => None,
     }
 }
 
 fn from_session(session: &str) -> Option<Desktop> {
     match session {
-        "sill" => Some(Desktop::Ours),
+        s if s.starts_with("quire") || s.starts_with("sill") => Some(Desktop::Ours),
         s if s.starts_with("plasma") => Some(Desktop::Kde),
         s if s.starts_with("gnome") => Some(Desktop::Gnome),
         _ => None,
@@ -116,7 +116,7 @@ mod tests {
             (
                 "ours",
                 HostOs::Linux,
-                &[("XDG_CURRENT_DESKTOP", "sill")],
+                &[("XDG_CURRENT_DESKTOP", "quire")],
                 linux(Desktop::Ours),
             ),
             (
