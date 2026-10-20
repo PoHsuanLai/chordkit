@@ -48,8 +48,8 @@ impl Keymap {
         let mut refused: Vec<AppAction> = Vec::new();
         let mut first: Option<Conflict> = None;
         for row in registration.rows() {
-            match self.check(row, &staged) {
-                Ok(()) => stage(&mut staged, row),
+            match self.settle(row, &staged) {
+                Ok(binding) => stage(&mut staged, row, binding),
                 Err(conflict) => {
                     refused.push(row.action.clone());
                     first.get_or_insert(conflict);
@@ -87,7 +87,25 @@ impl Keymap {
         self.rebuild();
     }
 
-    fn check(&self, row: &Row, staged: &[Entry]) -> Result<(), Conflict> {
+    /// The binding `row` takes: its own when its live chords are free, else, when it has a
+    /// fallback, the fallback alone if that is free. Both taken refuses with the default's
+    /// conflict.
+    fn settle(&self, row: &Row, staged: &[Entry]) -> Result<Binding, Conflict> {
+        match self.check(row, row.binding, staged) {
+            Ok(()) => Ok(row.binding),
+            Err(conflict) => match row.binding.fallback() {
+                Some(fallback) => {
+                    let alone = Binding::from(fallback);
+                    self.check(row, alone, staged)
+                        .map(|()| alone)
+                        .map_err(|_| conflict)
+                }
+                None => Err(conflict),
+            },
+        }
+    }
+
+    fn check(&self, row: &Row, binding: Binding, staged: &[Entry]) -> Result<(), Conflict> {
         let wanting = Action::App(row.action.clone());
         let live: Vec<Entry> = self
             .entries
@@ -97,7 +115,7 @@ impl Keymap {
             .cloned()
             .collect();
         for context in CHECKED {
-            let Some(concrete) = row.binding.live(self.platform, context) else {
+            let Some(concrete) = binding.live(self.platform, context) else {
                 continue;
             };
             let shown = concrete.display(self.platform);
@@ -155,9 +173,8 @@ fn clash(shown: String, held: Action, wanting: &Action) -> Conflict {
     }
 }
 
-fn stage(staged: &mut Vec<Entry>, row: &Row) {
+fn stage(staged: &mut Vec<Entry>, row: &Row, binding: Binding) {
     let wanted = Action::App(row.action.clone());
-    let binding: Binding = row.binding;
     match staged.iter_mut().find(|entry| entry.action == wanted) {
         Some(entry) => entry.chords.push(binding),
         None => staged.push(Entry {

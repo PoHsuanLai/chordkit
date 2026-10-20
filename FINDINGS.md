@@ -25,8 +25,9 @@
   `StandardAction::reach` in `reach.rs`; a forgone action is unbound in that app's keymap whatever the
   system or the person says.
 - A registration row may carry a fallback default, live in each context where the first default has no
-  form. Open: the fallback is not tried when the first default has a form but collides; that row is
-  refused.
+  form. When the first default has a form but collides (reserved, a standard action's, or another
+  action's) in a checked context, the fallback alone takes the row in every context, if it is free;
+  if it collides too, the row is refused with the first default's conflict.
 
 - Window tiling (Tile Left, Right, Top, Bottom, the four quarters, Fill, Center, Return to Previous Size)
   follows Sequoia's Window > Move & Resize menu. Apple's keys are Globe(Fn)+Ctrl+Left, Right, Up, Down,

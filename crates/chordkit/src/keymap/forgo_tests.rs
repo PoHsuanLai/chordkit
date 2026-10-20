@@ -314,3 +314,76 @@ fn a_default_that_cannot_fire_in_a_terminal_falls_back() {
         app("temor.equalize")
     );
 }
+
+#[test]
+fn a_default_that_collides_gives_way_to_a_free_fallback() {
+    // On other Linux, Ctrl+Alt+Left and Ctrl+Alt+Right are Space left and right.
+    type Case = (
+        &'static str,
+        &'static str,
+        &'static str,
+        &'static str,
+        Option<&'static str>,
+    );
+    let cases: &[Case] = &[
+        (
+            "default free",
+            "Primary+Alt+Shift+Left",
+            "Primary+Alt+Shift+Right",
+            "Ctrl+Alt+Shift+Left",
+            Some("temor.pane-left"),
+        ),
+        (
+            "default collides, fallback free",
+            "Primary+Alt+Left",
+            "Primary+Alt+Shift+Left",
+            "Ctrl+Alt+Shift+Left",
+            Some("temor.pane-left"),
+        ),
+        (
+            "default collides, the standard action keeps it",
+            "Primary+Alt+Left",
+            "Primary+Alt+Shift+Left",
+            "Ctrl+Alt+Left",
+            None,
+        ),
+    ];
+    for (name, first, second, pressed, expected) in cases {
+        let registration = Registration::new(&temor()).action_with_fallback(
+            pane_left(),
+            chord(first),
+            chord(second),
+        );
+        let mut keymap = Keymap::conventional(on(Desktop::Other));
+        assert_eq!(keymap.register_with(&registration), Ok(()), "{name}");
+        let found = keymap.resolve(&input(pressed), Context::Normal);
+        let standard_kept = (*name).contains("standard");
+        if standard_kept {
+            assert_eq!(found, standard(StandardAction::SpaceLeft), "{name}");
+        } else {
+            assert_eq!(found, expected.and_then(app), "{name}");
+        }
+    }
+}
+
+#[test]
+fn both_defaults_colliding_refuses_the_row_as_before() {
+    let registration = Registration::new(&temor()).action_with_fallback(
+        pane_left(),
+        chord("Primary+Alt+Left"),
+        chord("Primary+Alt+Right"),
+    );
+    let mut keymap = Keymap::conventional(on(Desktop::Other));
+    let result = keymap.register_with(&registration);
+    assert!(
+        matches!(
+            result,
+            Err(Conflict::Standard {
+                action: StandardAction::SpaceLeft,
+                ..
+            })
+        ),
+        "{result:?}"
+    );
+    assert!(keymap.chords_of(&Action::App(pane_left())).is_empty());
+}

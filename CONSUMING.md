@@ -192,7 +192,9 @@ let registration = Registration::new(&temor)
 keymap.register_with(&registration)?;
 ```
 
-A fallback serves each context where the first default resolves to nothing; a chord the keymap refuses
+A fallback serves each context where the first default resolves to nothing, and replaces the first
+default everywhere when that one collides with something that takes it first (if the fallback is
+free; if not, the row is refused). A chord the keymap refuses
 is checked on whichever chord is live in each context. `register(app, rows)` is the same without
 forgoing or fallbacks.
 
