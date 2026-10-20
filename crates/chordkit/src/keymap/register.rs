@@ -47,10 +47,19 @@ impl Keymap {
         let mut staged = forgone_entries(app, registration.forgone())?;
         let mut refused: Vec<AppAction> = Vec::new();
         let mut first: Option<Conflict> = None;
+        // Defaults first, so a fallback never takes a chord another row's default wants; then
+        // the fallbacks of the rows whose default collided, in declaration order.
+        let mut collided: Vec<(&Row, Conflict)> = Vec::new();
         for row in registration.rows() {
-            match self.settle(row, &staged) {
-                Ok(binding) => stage(&mut staged, row, binding),
-                Err(conflict) => {
+            match self.check(row, row.binding, &staged) {
+                Ok(()) => stage(&mut staged, row, row.binding),
+                Err(conflict) => collided.push((row, conflict)),
+            }
+        }
+        for (row, conflict) in collided {
+            match self.fall_back(row, &staged) {
+                Some(binding) => stage(&mut staged, row, binding),
+                None => {
                     refused.push(row.action.clone());
                     first.get_or_insert(conflict);
                 }
@@ -87,22 +96,16 @@ impl Keymap {
         self.rebuild();
     }
 
-    /// The binding `row` takes: its own when its live chords are free, else, when it has a
-    /// fallback, the fallback alone if that is free. Both taken refuses with the default's
-    /// conflict.
-    fn settle(&self, row: &Row, staged: &[Entry]) -> Result<Binding, Conflict> {
-        match self.check(row, row.binding, staged) {
-            Ok(()) => Ok(row.binding),
-            Err(conflict) => match row.binding.fallback() {
-                Some(fallback) => {
-                    let alone = Binding::from(fallback);
-                    self.check(row, alone, staged)
-                        .map(|()| alone)
-                        .map_err(|_| conflict)
-                }
-                None => Err(conflict),
-            },
-        }
+    /// The fallback alone as `row`'s binding, when it is live in every checked context where the
+    /// default was and is free there; `None` when the row has no fallback or it will not do.
+    fn fall_back(&self, row: &Row, staged: &[Entry]) -> Option<Binding> {
+        let fallback = row.binding.fallback()?;
+        let alone = Binding::from(fallback);
+        let covers = CHECKED.iter().all(|context| {
+            row.binding.first_live(self.platform, *context).is_none()
+                || alone.live(self.platform, *context).is_some()
+        });
+        (covers && self.check(row, alone, staged).is_ok()).then_some(alone)
     }
 
     fn check(&self, row: &Row, binding: Binding, staged: &[Entry]) -> Result<(), Conflict> {

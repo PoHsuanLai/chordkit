@@ -315,66 +315,131 @@ fn a_default_that_cannot_fire_in_a_terminal_falls_back() {
     );
 }
 
+/// Registers `rows` (id, default, fallback) for temor on other Linux, returning the keymap and
+/// the result.
+fn register_rows(rows: &[(&str, &str, Option<&str>)]) -> (Keymap, Result<(), Conflict>) {
+    let mut registration = Registration::new(&temor());
+    for (id, first, fallback) in rows {
+        registration = match fallback {
+            Some(fallback) => {
+                registration.action_with_fallback(action(id), chord(first), chord(fallback))
+            }
+            None => registration.action(action(id), chord(first)),
+        };
+    }
+    let mut keymap = Keymap::conventional(on(Desktop::Other));
+    let result = keymap.register_with(&registration);
+    (keymap, result)
+}
+
+type CollideCase = (
+    &'static str,
+    &'static str,
+    &'static str,
+    Context,
+    &'static str,
+    Option<Action>,
+);
+
 #[test]
-fn a_default_that_collides_gives_way_to_a_free_fallback() {
-    // On other Linux, Ctrl+Alt+Left and Ctrl+Alt+Right are Space left and right.
-    type Case = (
-        &'static str,
-        &'static str,
-        &'static str,
-        &'static str,
-        Option<&'static str>,
-    );
-    let cases: &[Case] = &[
+fn a_colliding_default_gives_way_to_a_free_fallback() {
+    // On other Linux, Ctrl+Alt+Left is Space left and Alt+Tab is reserved.
+    let mine = app("temor.pane-left");
+    let cases: &[CollideCase] = &[
         (
             "default free",
-            "Primary+Alt+Shift+Left",
-            "Primary+Alt+Shift+Right",
-            "Ctrl+Alt+Shift+Left",
-            Some("temor.pane-left"),
+            "Primary+Alt+J",
+            "Primary+Alt+Q",
+            Context::Normal,
+            "Ctrl+Alt+J",
+            mine.clone(),
         ),
         (
-            "default collides, fallback free",
-            "Primary+Alt+Left",
-            "Primary+Alt+Shift+Left",
-            "Ctrl+Alt+Shift+Left",
-            Some("temor.pane-left"),
-        ),
-        (
-            "default collides, the standard action keeps it",
-            "Primary+Alt+Left",
-            "Primary+Alt+Shift+Left",
-            "Ctrl+Alt+Left",
+            "default free: the fallback stays unbound",
+            "Primary+Alt+J",
+            "Primary+Alt+Q",
+            Context::Normal,
+            "Ctrl+Alt+Q",
             None,
         ),
+        (
+            "standard collision, fallback free",
+            "Primary+Alt+Left",
+            "Primary+Alt+Q",
+            Context::Normal,
+            "Ctrl+Alt+Q",
+            mine.clone(),
+        ),
+        (
+            "standard collision: the standard action keeps its chord",
+            "Primary+Alt+Left",
+            "Primary+Alt+Q",
+            Context::Normal,
+            "Ctrl+Alt+Left",
+            standard(StandardAction::SpaceLeft),
+        ),
+        (
+            "standard collision, in a terminal",
+            "Primary+Alt+Left",
+            "Primary+Alt+Q",
+            Context::Terminal,
+            "Ctrl+Shift+Alt+Q",
+            mine.clone(),
+        ),
+        (
+            "reserved collision",
+            "Alt+Tab",
+            "Primary+Alt+Q",
+            Context::Normal,
+            "Ctrl+Alt+Q",
+            mine,
+        ),
     ];
-    for (name, first, second, pressed, expected) in cases {
-        let registration = Registration::new(&temor()).action_with_fallback(
-            pane_left(),
-            chord(first),
-            chord(second),
+    for (name, first, fallback, context, pressed, expected) in cases {
+        let (keymap, result) = register_rows(&[("temor.pane-left", first, Some(fallback))]);
+        assert_eq!(result, Ok(()), "{name}");
+        assert_eq!(
+            keymap.resolve(&input(pressed), *context),
+            *expected,
+            "{name}"
         );
-        let mut keymap = Keymap::conventional(on(Desktop::Other));
-        assert_eq!(keymap.register_with(&registration), Ok(()), "{name}");
-        let found = keymap.resolve(&input(pressed), Context::Normal);
-        let standard_kept = (*name).contains("standard");
-        if standard_kept {
-            assert_eq!(found, standard(StandardAction::SpaceLeft), "{name}");
-        } else {
-            assert_eq!(found, expected.and_then(app), "{name}");
-        }
     }
 }
 
 #[test]
-fn both_defaults_colliding_refuses_the_row_as_before() {
-    let registration = Registration::new(&temor()).action_with_fallback(
-        pane_left(),
-        chord("Primary+Alt+Left"),
-        chord("Primary+Alt+Right"),
-    );
+fn a_default_taken_by_another_app_falls_back() {
     let mut keymap = Keymap::conventional(on(Desktop::Other));
-    let result = keymap.register_with(&registration);
+    let other = AppId::new("other").unwrap_or_else(|e| panic!("{e}"));
+    assert_eq!(
+        keymap.register(&other, &[(action("other.go"), chord("Primary+Alt+J"))]),
+        Ok(())
+    );
+    let registration = Registration::new(&temor()).action_with_fallback(
+        action("temor.jump"),
+        chord("Primary+Alt+J"),
+        chord("Primary+Alt+K"),
+    );
+    assert_eq!(keymap.register_with(&registration), Ok(()));
+    assert_eq!(
+        keymap.resolve(&input("Ctrl+Alt+J"), Context::Normal),
+        app("other.go")
+    );
+    assert_eq!(
+        keymap.resolve(&input("Ctrl+Alt+K"), Context::Normal),
+        app("temor.jump")
+    );
+}
+
+#[test]
+fn both_defaults_colliding_refuses_the_row_and_the_batch() {
+    let (keymap, result) = register_rows(&[
+        (
+            "temor.pane-left",
+            "Primary+Alt+Left",
+            Some("Primary+Alt+Right"),
+        ),
+        ("temor.fine", "Primary+Alt+J", None),
+    ]);
     assert!(
         matches!(
             result,
@@ -386,4 +451,66 @@ fn both_defaults_colliding_refuses_the_row_as_before() {
         "{result:?}"
     );
     assert!(keymap.chords_of(&Action::App(pane_left())).is_empty());
+    // Nothing from a refused batch registers.
+    assert_eq!(keymap.resolve(&input("Ctrl+Alt+J"), Context::Normal), None);
+}
+
+#[test]
+fn a_fallback_with_no_form_where_the_default_had_one_is_refused() {
+    // In a terminal Primary is Ctrl+Shift on other Linux, so Primary+Alt+Shift+Left has no form
+    // there while the default (Ctrl+Shift+Alt+Left) does: the fallback cannot cover it.
+    let (keymap, result) = register_rows(&[(
+        "temor.pane-left",
+        "Primary+Alt+Left",
+        Some("Primary+Alt+Shift+Left"),
+    )]);
+    assert!(
+        matches!(result, Err(Conflict::Standard { .. })),
+        "{result:?}"
+    );
+    assert!(keymap.chords_of(&Action::App(pane_left())).is_empty());
+}
+
+#[test]
+fn a_fallback_colliding_with_a_staged_default_is_refused() {
+    let rows = [
+        ("temor.a", "Primary+Alt+Left", Some("Primary+Alt+J")),
+        ("temor.b", "Primary+Alt+J", None),
+    ];
+    let (keymap, result) = register_rows(&rows);
+    assert!(result.is_err(), "{result:?}");
+    assert!(keymap.chords_of(&Action::App(action("temor.a"))).is_empty());
+}
+
+#[test]
+fn fallbacks_never_take_a_later_rows_default_whatever_the_order() {
+    let a = ("temor.a", "Primary+Alt+Left", Some("Primary+Alt+J"));
+    let b = ("temor.b", "Primary+Alt+J", None);
+    for rows in [[a, b], [b, a]] {
+        let (keymap, result) = register_rows(&rows);
+        assert!(result.is_err(), "{rows:?}");
+        assert_eq!(keymap.resolve(&input("Ctrl+Alt+J"), Context::Normal), None);
+    }
+    // With a free fallback the same two rows register alike in both orders.
+    let a = ("temor.a", "Primary+Alt+Left", Some("Primary+Alt+K"));
+    let mut seen = Vec::new();
+    for rows in [[a, b], [b, a]] {
+        let (keymap, result) = register_rows(&rows);
+        assert_eq!(result, Ok(()));
+        seen.push((
+            keymap.resolve(&input("Ctrl+Alt+K"), Context::Normal),
+            keymap.resolve(&input("Ctrl+Alt+J"), Context::Normal),
+        ));
+    }
+    assert_eq!(seen[0], seen[1]);
+    assert_eq!(seen[0], (app("temor.a"), app("temor.b")));
+}
+
+#[test]
+fn two_fallbacks_wanting_one_chord_go_to_the_first_declared() {
+    let a = ("temor.a", "Primary+Alt+Left", Some("Primary+Alt+K"));
+    let b = ("temor.b", "Primary+Alt+Right", Some("Primary+Alt+K"));
+    let (keymap, result) = register_rows(&[a, b]);
+    assert!(result.is_err(), "{result:?}");
+    assert!(keymap.chords_of(&Action::App(action("temor.b"))).is_empty());
 }

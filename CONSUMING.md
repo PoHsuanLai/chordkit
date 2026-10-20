@@ -194,7 +194,9 @@ keymap.register_with(&registration)?;
 
 A fallback serves each context where the first default resolves to nothing, and replaces the first
 default everywhere when that one collides with something that takes it first (if the fallback is
-free; if not, the row is refused). A chord the keymap refuses
+free and live wherever the default was; if not, the row is refused). Defaults settle before
+fallbacks, so a fallback never takes a chord another row's default wants; two fallbacks wanting one
+chord go to the first declared and the other is refused. A chord the keymap refuses
 is checked on whichever chord is live in each context. `register(app, rows)` is the same without
 forgoing or fallbacks.
 

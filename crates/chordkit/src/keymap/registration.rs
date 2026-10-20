@@ -65,8 +65,12 @@ impl Registration {
         self
     }
 
-    /// Declares `action` with a default and a fallback, used in each context where the default
-    /// has no live form (a Primary chord with Shift and Alt in a terminal, say).
+    /// Declares `action` with a default and a fallback. The fallback serves each context where the
+    /// default has no live form (a Primary chord with Shift and Alt in a terminal, say). It also
+    /// replaces the default everywhere when the default is reserved or taken, provided it is live
+    /// wherever the default was and free there; otherwise the row is refused. Defaults settle
+    /// before fallbacks, so declaration order only matters between two fallbacks wanting one
+    /// chord: the first declared wins and the other is refused.
     pub fn action_with_fallback(
         mut self,
         action: AppAction,
