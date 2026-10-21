@@ -3,9 +3,9 @@
 //! The split follows the Mac menus. A universal action is part of being a desktop app or of the
 //! desktop itself (clipboard, undo, windows, quit, find, the desktop's own switchers), so every
 //! app honours it and none may give up its chord. An action that is only meaningful where the
-//! app has the feature (fonts, text styles, printing, documents, toolbars) is offered by
-//! those apps alone; an app without the feature may [forgo](crate::Registration::forgo) it and
-//! take the chord for something of its own.
+//! app has the feature (fonts, text styles, printing, documents, toolbars, stepping through found
+//! text) is offered by those apps alone; an app without the feature may
+//! [forgo](crate::Registration::forgo) it and take the chord for something of its own.
 
 use crate::standard_action::StandardAction;
 
@@ -23,8 +23,8 @@ impl StandardAction {
     ///
     /// | Reach | Actions |
     /// |---|---|
-    /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, find next, find previous, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches, the window tiles (halves and quarters), fill, center, return to previous size |
-    /// | IfOffered | paste and match style, use selection for find, jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, actual size, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
+    /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches, the window tiles (halves and quarters), fill, center, return to previous size |
+    /// | IfOffered | paste and match style, use selection for find, jump to selection, find next, find previous, bold, italic, underline, show fonts, show colours, bigger, smaller, actual size, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
     pub fn reach(self) -> Reach {
         use StandardAction as S;
         match self {
@@ -48,7 +48,11 @@ impl StandardAction {
             | S::ToggleToolbar
             | S::ToggleSidebar
             | S::QuickLook
-            | S::Reveal => Reach::IfOffered,
+            | S::Reveal
+            // Find Next and Find Previous belong to an app with text to search: Finder offers
+            // Find (⌘F) but not them, and gives ⇧⌘G to Go to Folder.
+            | S::FindNext
+            | S::FindPrevious => Reach::IfOffered,
             S::Launcher
             | S::NextInputSource
             | S::EmojiAndSymbols
@@ -65,8 +69,6 @@ impl StandardAction {
             | S::Undo
             | S::Redo
             | S::Find
-            | S::FindNext
-            | S::FindPrevious
             | S::Hide
             | S::HideOthers
             | S::Minimize
@@ -125,6 +127,8 @@ mod tests {
             (S::Bold, Reach::IfOffered),
             (S::Print, Reach::IfOffered),
             (S::PageSetup, Reach::IfOffered),
+            (S::FindNext, Reach::IfOffered),
+            (S::FindPrevious, Reach::IfOffered),
         ];
         for (action, expected) in cases {
             assert_eq!(action.reach(), *expected, "{action:?}");
@@ -136,6 +140,6 @@ mod tests {
         let offered = StandardAction::all()
             .filter(|a| a.reach() == Reach::IfOffered)
             .count();
-        assert_eq!(offered, 21);
+        assert_eq!(offered, 23);
     }
 }

@@ -166,11 +166,11 @@ wins over your default (see below). Register at startup, and again after a reloa
 ### Standard actions an app does not offer
 
 Every standard action has a `Reach` (`StandardAction::reach`). `Reach::Universal` actions are
-honoured by every app and keep their chord: copy, cut, paste, select all, undo, redo, find (and next,
-previous), settings, help, cancel, quit, close, minimise, hide, full screen, the app and window
+honoured by every app and keep their chord: copy, cut, paste, select all, undo, redo, find,
+settings, help, cancel, quit, close, minimise, hide, full screen, the app and window
 switchers and every desktop action (Spaces, screenshots, lock, log out). `Reach::IfOffered` actions
 mean something only where the app has the feature: paste and match style, use selection for find,
-jump to selection, bold, italic, underline, show fonts, show colours, bigger, smaller, new, open, save,
+jump to selection, find next and find previous (a file manager gives ⇧⌘G to Go to Folder), bold, italic, underline, show fonts, show colours, bigger, smaller, new, open, save,
 save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal.
 
 An app without the feature gives the action up and may then use its chord. Build the registration with

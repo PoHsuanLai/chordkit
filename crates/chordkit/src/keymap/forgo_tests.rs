@@ -84,6 +84,26 @@ fn an_app_without_fonts_takes_the_fonts_chord_and_others_keep_it() {
     }
 }
 
+/// Finder's Go to Folder is ⇧⌘G, Find Previous elsewhere: an app with no found text to step
+/// through gives up Find Next and Find Previous and takes the chord, and keeps Find.
+#[test]
+fn an_app_without_found_text_takes_find_previous_and_keeps_find() {
+    let files = AppId::new("files").unwrap_or_else(|e| panic!("{e}"));
+    let registration = Registration::new(&files)
+        .forgo_all([StandardAction::FindNext, StandardAction::FindPrevious])
+        .action(action("files.go-to-folder"), chord("Primary+Shift+G"));
+    let mut keymap = Keymap::conventional(Platform::MacOs);
+    assert_eq!(keymap.register_with(&registration), Ok(()));
+    assert_eq!(
+        keymap.resolve(&input("Super+Shift+G"), Context::Normal),
+        app("files.go-to-folder")
+    );
+    assert_eq!(
+        keymap.resolve(&input("Super+F"), Context::Normal),
+        standard(StandardAction::Find)
+    );
+}
+
 #[test]
 fn a_forgone_action_stays_gone_when_the_system_or_person_binds_it() {
     let platform = Platform::MacOs;
