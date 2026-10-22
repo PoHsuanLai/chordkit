@@ -49,6 +49,9 @@ impl StandardAction {
             | S::ToggleSidebar
             | S::QuickLook
             | S::Reveal
+            | S::MoveToTrash
+            | S::NewFolder
+            | S::EmptyTrash
             // Find Next and Find Previous belong to an app with text to search: Finder offers
             // Find (⌘F) but not them, and gives ⇧⌘G to Go to Folder.
             | S::FindNext
@@ -140,6 +143,6 @@ mod tests {
         let offered = StandardAction::all()
             .filter(|a| a.reach() == Reach::IfOffered)
             .count();
-        assert_eq!(offered, 23);
+        assert_eq!(offered, 26);
     }
 }

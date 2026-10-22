@@ -94,6 +94,12 @@ pub(super) static ROWS: &[TableRow] = &[
         S::Reveal,
         Unbound("There is no common key for showing an item in the file manager."),
     ),
+    (S::MoveToTrash, Key("Delete")),
+    (S::NewFolder, Key("Primary+Shift+N")),
+    (
+        S::EmptyTrash,
+        Unbound("There is no common key for emptying the Trash."),
+    ),
     (S::ScreenshotScreen, Key("PrintScreen")),
     (S::ScreenshotSelection, Key("Shift+PrintScreen")),
     (

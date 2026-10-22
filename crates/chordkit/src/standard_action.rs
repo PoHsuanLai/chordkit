@@ -119,6 +119,12 @@ pub enum StandardAction {
     QuickLook,
     /// Show the item in the file manager.
     Reveal,
+    /// Move the selected items to the Trash.
+    MoveToTrash,
+    /// Make a new folder where the person is.
+    NewFolder,
+    /// Empty the Trash.
+    EmptyTrash,
     /// Capture the whole screen.
     ScreenshotScreen,
     /// Capture a part of the screen.
@@ -220,6 +226,9 @@ const NAMED: &[Named] = &[
     (StandardAction::ToggleDock, "toggle-dock"),
     (StandardAction::QuickLook, "quick-look"),
     (StandardAction::Reveal, "reveal"),
+    (StandardAction::MoveToTrash, "move-to-trash"),
+    (StandardAction::NewFolder, "new-folder"),
+    (StandardAction::EmptyTrash, "empty-trash"),
     (StandardAction::ScreenshotScreen, "screenshot-screen"),
     (StandardAction::ScreenshotSelection, "screenshot-selection"),
     (StandardAction::ScreenshotTools, "screenshot-tools"),
@@ -305,9 +314,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn there_are_seventy_eight_and_slugs_are_unique_and_round_trip() {
+    fn there_are_eighty_one_and_slugs_are_unique_and_round_trip() {
         let all: Vec<StandardAction> = StandardAction::all().collect();
-        assert_eq!(all.len(), 78);
+        assert_eq!(all.len(), 81);
         let mut slugs: Vec<String> = all.iter().map(|a| a.slug()).collect();
         for (action, slug) in all.iter().zip(&slugs) {
             assert!(!slug.is_empty(), "{action:?} has no slug");
@@ -315,7 +324,7 @@ mod tests {
         }
         slugs.sort();
         slugs.dedup();
-        assert_eq!(slugs.len(), 78);
+        assert_eq!(slugs.len(), 81);
     }
 
     #[test]

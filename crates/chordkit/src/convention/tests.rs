@@ -19,7 +19,7 @@ fn every_standard_action_has_a_default_or_a_reason_on_every_platform() {
                 "{platform:?} has no row, or an unreadable row, for {action:?}"
             );
         }
-        assert_eq!(table.iter().count(), 78, "{platform:?}");
+        assert_eq!(table.iter().count(), 81, "{platform:?}");
     }
 }
 
@@ -101,6 +101,20 @@ fn conventions_resolve_to_the_expected_chords() {
         (gnome, StandardAction::Quit, "Ctrl+Q"),
         (other, StandardAction::Save, "Ctrl+S"),
         (other, StandardAction::Help, "F1"),
+        (
+            Platform::MacOs,
+            StandardAction::MoveToTrash,
+            "Super+Backspace",
+        ),
+        (Platform::MacOs, StandardAction::NewFolder, "Shift+Super+N"),
+        (
+            Platform::MacOs,
+            StandardAction::EmptyTrash,
+            "Shift+Super+Backspace",
+        ),
+        (ours, StandardAction::NewFolder, "Shift+Super+N"),
+        (gnome, StandardAction::MoveToTrash, "Delete"),
+        (Platform::Windows, StandardAction::NewFolder, "Ctrl+Shift+N"),
     ];
     for (platform, action, expected) in cases {
         let wanted: Chord = expected

@@ -325,9 +325,9 @@ fn apps_own_primary_digits_and_the_refusal_reads_in_words() {
 #[test]
 fn two_apps_cannot_share_a_chord_and_foreign_ids_are_refused() {
     let mut keymap = Keymap::conventional(Platform::Windows);
-    let first = (app_action("mail.compose"), default_chord("Primary+Alt+N"));
+    let first = (app_action("mail.compose"), default_chord("Primary+Alt+J"));
     assert_eq!(keymap.register(&app("mail"), &[first]), Ok(()));
-    let second = (app_action("notes.capture"), default_chord("Primary+Alt+N"));
+    let second = (app_action("notes.capture"), default_chord("Primary+Alt+J"));
     assert!(matches!(
         keymap.register(&app("notes"), &[second]),
         Err(Conflict::Taken { held_by, .. }) if held_by == "mail.compose"
@@ -408,7 +408,7 @@ fn overrides_of_unregistered_app_actions_wait_until_registered() {
     );
     let registered = keymap.register(
         &app("mail"),
-        &[(compose.clone(), default_chord("Primary+Alt+N"))],
+        &[(compose.clone(), default_chord("Primary+Alt+J"))],
     );
     assert_eq!(registered, Ok(()));
     assert!(keymap.dormant_overrides().is_empty());
@@ -416,7 +416,7 @@ fn overrides_of_unregistered_app_actions_wait_until_registered() {
         keymap.resolve(&input("Ctrl+Shift+M"), Context::Normal),
         Some(Action::App(compose))
     );
-    assert_eq!(keymap.resolve(&input("Ctrl+Alt+N"), Context::Normal), None);
+    assert_eq!(keymap.resolve(&input("Ctrl+Alt+J"), Context::Normal), None);
 }
 
 /// Raw presses as a window reports them: the key with Shift not applied, Shift in the modifiers.
