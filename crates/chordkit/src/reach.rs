@@ -21,10 +21,7 @@ pub enum Reach {
 impl StandardAction {
     /// Whether every app honours this action, or only apps that offer the feature.
     ///
-    /// | Reach | Actions |
-    /// |---|---|
-    /// | Universal | launcher, next input source, emoji and symbols, next/previous app, next window, settings, cancel, help, select all, copy, cut, paste, undo, redo, find, hide, hide others, minimise, minimise all, close, close all, quit, full screen, toggle dock, app windows, mission control, force quit, lock screen, log out, the screenshots, the Space switches, the window tiles (halves and quarters), fill, center, return to previous size |
-    /// | IfOffered | paste and match style, use selection for find, jump to selection, find next, find previous, bold, italic, underline, show fonts, show colours, bigger, smaller, actual size, new, open, save, save as, print, page setup, toggle toolbar, toggle sidebar, quick look, reveal |
+    /// The match below is the one list: it names every action, so a new action cannot be left out.
     pub fn reach(self) -> Reach {
         use StandardAction as S;
         match self {

@@ -2,7 +2,7 @@
 
 use crate::chord::Chord;
 use crate::key::Key;
-use crate::modifier::Modifier;
+use crate::modifier::{Modifier, Modifiers};
 use crate::platform::{Desktop, Platform};
 
 enum Rule {
@@ -10,11 +10,13 @@ enum Rule {
     Exact(&'static str),
     /// Every chord that uses the OS key.
     AnyWithSuper,
+    /// Ctrl and a digit key from 1 to 9, with nothing else held.
+    CtrlDigit,
 }
 
 type ReservedRow = (Rule, &'static str);
 
-use Rule::{AnyWithSuper, Exact};
+use Rule::{AnyWithSuper, CtrlDigit, Exact};
 
 const OURS: &[ReservedRow] = &[
     (
@@ -34,15 +36,7 @@ const OURS: &[ReservedRow] = &[
         Exact("Ctrl+Space"),
         "The desktop switches the input language with it.",
     ),
-    (Exact("Ctrl+1"), "The desktop switches to Space 1 with it."),
-    (Exact("Ctrl+2"), "The desktop switches to Space 2 with it."),
-    (Exact("Ctrl+3"), "The desktop switches to Space 3 with it."),
-    (Exact("Ctrl+4"), "The desktop switches to Space 4 with it."),
-    (Exact("Ctrl+5"), "The desktop switches to Space 5 with it."),
-    (Exact("Ctrl+6"), "The desktop switches to Space 6 with it."),
-    (Exact("Ctrl+7"), "The desktop switches to Space 7 with it."),
-    (Exact("Ctrl+8"), "The desktop switches to Space 8 with it."),
-    (Exact("Ctrl+9"), "The desktop switches to Space 9 with it."),
+    (CtrlDigit, "The desktop switches to a Space with it."),
 ];
 
 const MAC: &[ReservedRow] = &[
@@ -137,6 +131,10 @@ fn matches_rule(rule: &Rule, chord: Chord) -> bool {
             .parse::<Chord>()
             .is_ok_and(|reserved| reserved == chord),
         Rule::AnyWithSuper => uses_super(chord),
+        Rule::CtrlDigit => {
+            chord.modifiers() == Modifiers::of(Modifier::Ctrl)
+                && matches!(chord.key(), Key::Char('1'..='9'))
+        }
     }
 }
 

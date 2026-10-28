@@ -44,6 +44,11 @@
   These Ctrl+Alt keys are desktop keys: as plain-Ctrl chords an app in a terminal context would not
   see them, which is right because the compositor takes them first.
 
+- **Plain types (2026-10-28).** The type rule changed (CONVENTIONS 4). `Platform`, `Desktop` and the
+  slug strings stay as they are: cua depends on them. The nine `Ctrl+1`..`Ctrl+9` reserved rows on
+  our desktop are one `CtrlDigit` rule, so the reason reads "switches to a Space" without the number.
+  `AltGr` waits for wave 2 (quire uses it).
+
 ## Sources
 
 - KDE: reads the `[Shortcuts]` group of kdeglobals (KStandardShortcut names to standard actions).
